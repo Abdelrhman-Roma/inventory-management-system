@@ -83,6 +83,10 @@ public class ProductFrame extends JFrame {
         refreshBtn.setBounds(400, 350, 150, 30);
         add(refreshBtn);
 
+        JButton backBtn = new JButton("Back");
+        backBtn.setBounds(400, 390, 150, 30);
+        add(backBtn);
+
         //Table
         model = new DefaultTableModel();
         model.addColumn("ID");
@@ -147,6 +151,14 @@ public class ProductFrame extends JFrame {
             } catch(Exception ex) {
                 JOptionPane.showMessageDialog(this, "Invalid ID");
             }
+        });
+
+        backBtn.addActionListener(e -> {
+
+            dispose(); // يقفل صفحة المنتجات
+
+            new AdminDashboard(); // يرجع للصفحة السابقة
+
         });
 
         searchNameBtn.addActionListener(e -> {
