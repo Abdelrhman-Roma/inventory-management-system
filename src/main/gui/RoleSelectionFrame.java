@@ -2,6 +2,9 @@ package main.gui;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import main.service.ProductService;
 
 public class RoleSelectionFrame extends JFrame {
 
@@ -12,6 +15,16 @@ public class RoleSelectionFrame extends JFrame {
         setSize(400, 250);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        // Save data when closing
+        ProductService productService = new ProductService();
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                System.out.println("Saving data...");
+                productService.saveToFile();
+            }
+        });
 
         // Layout
         setLayout(new BorderLayout());
