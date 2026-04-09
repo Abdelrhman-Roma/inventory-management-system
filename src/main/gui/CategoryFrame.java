@@ -94,9 +94,9 @@ public class CategoryFrame extends JFrame {
 
         backBtn.addActionListener(e -> {
 
-            dispose(); // يقفل الصفحة الحالية
+            dispose();
 
-            new AdminDashboard(); // يرجع للصفحة السابقة
+            new AdminDashboard(); 
 
         });
 

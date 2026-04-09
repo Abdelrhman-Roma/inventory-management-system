@@ -56,7 +56,7 @@ private List<order> orders = new ArrayList<>();
 
         report.append("=== Product Report ===\n");
         
-        List<Product> products = productDao.getAllProducts();
+        List<Product> products = productDao.load();
 
         for (Product p : products) {
             report.append("ID: ").append(p.getId())
@@ -82,7 +82,7 @@ private List<order> orders = new ArrayList<>();
     java.util.HashMap<String, Integer> categoryCount = new java.util.HashMap<>();
 
     // loop through products
-    List<Product> products = productDao.getAllProducts();
+    List<Product> products = productDao.load();
     for (Product p : products)
    {
 

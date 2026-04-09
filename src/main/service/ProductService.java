@@ -1,82 +1,21 @@
-//=========================================================================
-
-//                  This File Complete No one Edit on it   (Abdelrhman Taha)
-
-//=========================================================================
-
 package main.service;
 
 import main.model.Product;
+import main.dao.ProductDAO;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import java.io.FileWriter;
-import java.io.File;
-import java.util.Scanner;
-
 public class ProductService {
 
-    private static List<Product> products = new ArrayList<>();
+    private List<Product> products;
+    private ProductDAO dao;
 
-    // ================= SAVE & LOAD =================
-
-    public void saveToFile() {
-        try {
-            FileWriter writer = new FileWriter("products.csv");
-
-            for (Product p : products) {
-                writer.write(
-                    p.getId() + "," +
-                    p.getName() + "," +
-                    p.getQuantity() + "," +
-                    p.getPrice() + "," +
-                    p.getCategory() + "," +
-                    p.getProductionDate() + "," +
-                    p.getExpiryDate() + "\n"
-                );
-            }
-
-            writer.close();
-            System.out.println("Data saved successfully!");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public ProductService() {
+        dao = new ProductDAO();
+        products = dao.load();
+        System.out.println("Loaded products = " + products.size());
     }
-
-    public void loadFromFile() {
-        try {
-            File file = new File("products.csv");
-
-            if (!file.exists()) return;
-
-            Scanner scanner = new Scanner(file);
-
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                String[] data = line.split(",");
-
-                Product p = new Product(
-                    Integer.parseInt(data[0]),
-                    data[1],
-                    Integer.parseInt(data[2]),
-                    Double.parseDouble(data[3]),
-                    data[4],
-                    java.time.LocalDate.parse(data[5]),
-                    java.time.LocalDate.parse(data[6])
-                );
-
-                products.add(p);
-            }
-
-            scanner.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    // ================= ORIGINAL CODE (WITH AUTO SAVE) =================
 
     public String addProduct(Product product) {
 
@@ -87,7 +26,7 @@ public class ProductService {
         }
 
         products.add(product);
-        saveToFile();   // AUTO SAVE
+        dao.save(products);
 
         return "Product added successfully";
     }
@@ -96,16 +35,20 @@ public class ProductService {
         return products;
     }
 
-    public String updateProduct(int id, String name, int quantity, double price) {
+    // ✅ FIXED HERE
+    public String updateProduct(Product updatedProduct) {
 
         for (Product p : products) {
-            if (p.getId() == id) {
+            if (p.getId() == updatedProduct.getId()) {
 
-                p.setName(name);
-                p.setQuantity(quantity);
-                p.setPrice(price);
+                p.setName(updatedProduct.getName());
+                p.setQuantity(updatedProduct.getQuantity());
+                p.setPrice(updatedProduct.getPrice());
+                p.setCategory(updatedProduct.getCategory());
+                p.setProductionDate(updatedProduct.getProductionDate());
+                p.setExpiryDate(updatedProduct.getExpiryDate());
 
-                saveToFile();   //  AUTO SAVE
+                dao.save(products);
                 return "Product updated successfully";
             }
         }
@@ -119,14 +62,15 @@ public class ProductService {
             if (products.get(i).getId() == id) {
                 products.remove(i);
 
-                saveToFile();   //  AUTO SAVE
-
+                dao.save(products);
                 return "Product deleted successfully";
             }
         }
 
         return "Product not found";
     }
+
+    // ================= SEARCH =================
 
     public List<Product> searchByName(String name) {
 
@@ -154,6 +98,7 @@ public class ProductService {
         return result;
     }
 
+    // ✅ ADD THESE (YOU WERE MISSING THEM)
     public List<Product> searchByExpiryDate(java.time.LocalDate date) {
 
         List<Product> result = new ArrayList<>();
