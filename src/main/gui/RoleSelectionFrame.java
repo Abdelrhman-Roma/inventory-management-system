@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+
 import main.service.ProductService;
 
 public class RoleSelectionFrame extends JFrame {
@@ -11,18 +12,18 @@ public class RoleSelectionFrame extends JFrame {
     public static String selectedRole = "";
 
     public RoleSelectionFrame() {
+
         setTitle("Select Role");
         setSize(400, 250);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // Save data when closing
+        // Save data when closing (NO SAVE NEEDED NOW)
         ProductService productService = new ProductService();
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                System.out.println("Saving data...");
-                productService.saveToFile();
+                System.out.println("Closing...");
             }
         });
 
@@ -49,14 +50,14 @@ public class RoleSelectionFrame extends JFrame {
         // Admin Button Action
         adminBtn.addActionListener(e -> {
             selectedRole = "ADMIN";
-            new LoginFrame(); 
+            new LoginFrame();
             dispose();
         });
 
         // Client Button Action
         clientBtn.addActionListener(e -> {
             selectedRole = "CLIENT";
-            new LoginFrame(); 
+            new LoginFrame();
             dispose();
         });
 

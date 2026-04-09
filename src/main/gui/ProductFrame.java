@@ -11,13 +11,15 @@ import main.service.ProductService;
 
 public class ProductFrame extends JFrame {
 
-    ProductService productService = new ProductService();
+    ProductService productService; // بدون new هنا
 
     JTextField idField, nameField, quantityField, priceField, categoryField, productionField, expiryField;
     JTable table;
     DefaultTableModel model;
 
     public ProductFrame() {
+
+        productService = new ProductService(); // هنا الحل
 
         setTitle("Product Management");
         setSize(900,650);
@@ -46,7 +48,7 @@ public class ProductFrame extends JFrame {
         addLabel("Expiry (YYYY-MM-DD):", 270);
         expiryField = addField(200, 270);
 
-        //Buttons
+        // Buttons
         JButton addBtn = new JButton("Add");
         addBtn.setBounds(400, 30, 150, 30);
         add(addBtn);
@@ -87,7 +89,7 @@ public class ProductFrame extends JFrame {
         backBtn.setBounds(400, 390, 150, 30);
         add(backBtn);
 
-        //Table
+        // Table
         model = new DefaultTableModel();
         model.addColumn("ID");
         model.addColumn("Name");
@@ -102,7 +104,7 @@ public class ProductFrame extends JFrame {
         pane.setBounds(30, 420, 800, 180);
         add(pane);
 
-        //Actions
+        // Actions
 
         addBtn.addActionListener(e -> {
             try {
@@ -128,17 +130,23 @@ public class ProductFrame extends JFrame {
 
         updateBtn.addActionListener(e -> {
             try {
-                String msg = productService.updateProduct(
+                Product p = new Product(
                         Integer.parseInt(idField.getText()),
                         nameField.getText(),
                         Integer.parseInt(quantityField.getText()),
-                        Double.parseDouble(priceField.getText())
+                        Double.parseDouble(priceField.getText()),
+                        categoryField.getText(),
+                        LocalDate.parse(productionField.getText()),
+                        LocalDate.parse(expiryField.getText())
                 );
+
+                String msg = productService.updateProduct(p);
 
                 JOptionPane.showMessageDialog(this, msg);
                 loadTable(productService.getAllProducts());
+
             } catch(Exception ex) {
-                JOptionPane.showMessageDialog(this, "Invalid input");
+                JOptionPane.showMessageDialog(this, "Check input and date format YYYY-MM-DD");
             }
         });
 
@@ -154,11 +162,8 @@ public class ProductFrame extends JFrame {
         });
 
         backBtn.addActionListener(e -> {
-
-            dispose(); // يقفل صفحة المنتجات
-
-            new AdminDashboard(); // يرجع للصفحة السابقة
-
+            dispose();
+            new AdminDashboard();
         });
 
         searchNameBtn.addActionListener(e -> {
@@ -178,7 +183,6 @@ public class ProductFrame extends JFrame {
             }
         });
 
-        //NEW FEATURE
         searchProdBtn.addActionListener(e -> {
             try {
                 LocalDate d = LocalDate.parse(productionField.getText());
@@ -227,6 +231,8 @@ public class ProductFrame extends JFrame {
         });
 
         setVisible(true);
+
+        // مهم جدًا
         loadTable(productService.getAllProducts());
     }
 
