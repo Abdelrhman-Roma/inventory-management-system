@@ -1,17 +1,15 @@
 package main.dao;
 
-import main.model.Product;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import main.model.Product;
 
 public class ProductDAO {
 
-    private final String FILE_NAME = "C:/Users/PC/Desktop/computer science/Inventory-Management-System-project/inventory-management-system/products.csv";
-
+   private final String FILE_NAME = "products.csv";
     public void save(List<Product> products) {
         try {
             FileWriter writer = new FileWriter(FILE_NAME);
@@ -40,7 +38,7 @@ public class ProductDAO {
 
         try {
             File file = new File(FILE_NAME);
-
+            System.out.println("Reading from: " + file.getAbsolutePath());
             if (!file.exists()) return products;
 
             Scanner scanner = new Scanner(file);
