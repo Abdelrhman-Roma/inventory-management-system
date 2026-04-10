@@ -8,10 +8,11 @@ public class AdminService {
 
     private CategoryDAO dao = new CategoryDAO();
 
-    public void addCategory(int id, String name) {
+    public boolean addCategory(int id, String name) {
 
         Category c = new Category(id, name);
-        dao.addCategory(c);
+
+        return dao.addCategory(c);
 
     }
 
