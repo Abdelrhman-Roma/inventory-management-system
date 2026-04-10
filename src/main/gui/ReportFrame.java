@@ -59,9 +59,22 @@ panel.add(offerBtn);
     outputArea.setText(adminService.generateProfitReport());
         });
 
-        offerBtn.addActionListener(e -> {
-            JOptionPane.showMessageDialog(this, "Offer feature coming soon...");
-        });
+       offerBtn.addActionListener(e -> {
+
+    String id = JOptionPane.showInputDialog("Enter Product ID:");
+    String discount = JOptionPane.showInputDialog("Enter Discount %:");
+    String start = JOptionPane.showInputDialog("Start Date:");
+    String end = JOptionPane.showInputDialog("End Date:");
+
+    adminService.addOffer(
+            Integer.parseInt(id),
+            Double.parseDouble(discount),
+            start,
+            end
+    );
+
+    JOptionPane.showMessageDialog(this, "Offer Applied Successfully!");
+});
 
         setVisible(true);
     }

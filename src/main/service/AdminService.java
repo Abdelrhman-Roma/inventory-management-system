@@ -122,12 +122,26 @@ private List<order> orders = new ArrayList<>();
 // =======================//
 
 // Offer -> Ghayaty//
-    public void addOffer(int productId, double discount, String start, String end) {
+   public void addOffer(int productId, double discount, String start, String end) {
 
-        System.out.println("Offer Added → Product: " + productId +
-                " Discount: " + discount +
-                "% From: " + start +
-                " To: " + end);
+    List<Product> products = productDao.load();
+
+    for (Product p : products) {
+
+        if (p.getId() == productId) {
+
+            double oldPrice = p.getPrice();
+            double newPrice = oldPrice - (oldPrice * discount / 100);
+
+            p.setPrice(newPrice);
+
+            System.out.println("Offer Applied on " + p.getName() +
+                    " Old Price: " + oldPrice +
+                    " New Price: " + newPrice);
+        }
     }
-// ==================//
+
+    // save updated products back to CSV
+    productDao.save(products);
+     }
 }

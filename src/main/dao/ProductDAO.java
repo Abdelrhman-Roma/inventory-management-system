@@ -11,7 +11,7 @@ import java.util.Scanner;
 
 public class ProductDAO {
 
-    private final String FILE_NAME = "C:/Users/PC/Desktop/computer science/Inventory-Management-System-project/inventory-management-system/products.csv";
+    private final String FILE_NAME = "C:/Users/Ghayaty/Desktop/Adv project/inventory-management-system/products.csv";
 
     public void save(List<Product> products) {
         try {
