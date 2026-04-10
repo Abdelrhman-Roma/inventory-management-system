@@ -1,60 +1,64 @@
 package main.gui;
-import java.awt.*;
+
 import javax.swing.*;
+import java.awt.*;
 import main.Main;
 import main.service.ClientService;
 
 public class ClientFrame extends JFrame {
 
     public ClientFrame() {
-       setTitle("Register Client");
-    setSize(400, 300);
-    setLocationRelativeTo(null);
-    setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setTitle("Register New Account");
+        setSize(400, 400);
+        setLocationRelativeTo(null);
+        setLayout(new GridLayout(5, 2, 10, 10));
 
-    JPanel panel = new JPanel();
-    panel.setLayout(new GridLayout(4, 2, 10, 10));
-    panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        // الحقول
+        JTextField nameField = new JTextField();
+        JTextField emailField = new JTextField();
+        JPasswordField passwordField = new JPasswordField();
 
-    JTextField nameField = new JTextField();
-    JTextField emailField = new JTextField();
-    JPasswordField passwordField = new JPasswordField();
+        add(new JLabel("Name:"));
+        add(nameField);
+        add(new JLabel("Email:"));
+        add(emailField);
+        add(new JLabel("Password:"));
+        add(passwordField);
 
-    JButton registerBtn = new JButton("Register");
-    JButton backBtn = new JButton("Back");
+        JButton registerBtn = new JButton("Register");
+        JButton backBtn = new JButton("Back");
 
-    panel.add(new JLabel("Name:"));
-    panel.add(nameField);
+        add(registerBtn);
+        add(backBtn);
 
-    panel.add(new JLabel("Email:"));
-    panel.add(emailField);
+        // --- الأكشن بتاع التسجيل ---
+        registerBtn.addActionListener(e -> {
+            String name = nameField.getText();
+            String email = emailField.getText();
+            String password = new String(passwordField.getPassword());
 
-    panel.add(new JLabel("Password:"));
-    panel.add(passwordField);
+            if (name.isEmpty() || email.isEmpty() || password.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Please fill all fields!");
+                return;
+            }
 
-    panel.add(registerBtn);
-    panel.add(backBtn);
+            // بننادي الدالة من السيرفيس اللي في المين
+            boolean success = Main.clientService.registerClient(name, email, password);
 
-    add(panel);
+            if (success) {
+                JOptionPane.showMessageDialog(this, "Registered Successfully!");
+                dispose(); // يقفل الشاشة
+                new ClientDashboard(); // يفتح الداشبورد تاني
+            } else {
+                JOptionPane.showMessageDialog(this, "Email already exists!");
+            }
+        });
 
-    setVisible(true);
-    
-       registerBtn.addActionListener(e -> {
-
-    String name = nameField.getText();
-    String email = emailField.getText();
-    String password = new String(passwordField.getPassword());
-
-    ClientService service = Main.clientService; 
-
-    boolean success = service.registerClient(name, email, password);
-
-    if (success) {
-        JOptionPane.showMessageDialog(this, "Registered Successfully!");
-    } else {
-        JOptionPane.showMessageDialog(this, "Email already exists!");
-    }
-});
+        // --- زرار الرجوع ---
+        backBtn.addActionListener(e -> {
+            dispose();
+            new ClientDashboard();
+        });
 
         setVisible(true);
     }

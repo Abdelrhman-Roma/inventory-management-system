@@ -25,10 +25,11 @@ private List<order> orders = new ArrayList<>();
     // constructor (runs when object is created) -> Ghayaty
     
 
-    public void addCategory(int id, String name) {
+    public boolean addCategory(int id, String name) {
 
         Category c = new Category(id, name);
-        dao.addCategory(c);
+
+        return dao.addCategory(c);
 
     }
 
