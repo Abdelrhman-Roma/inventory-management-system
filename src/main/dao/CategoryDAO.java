@@ -5,8 +5,10 @@ import java.io.*;
 import main.model.Category;
 
 public class CategoryDAO {
+  
 
     private final String FILE = "categories.csv";
+
 
     public boolean addCategory(Category c) {
 
