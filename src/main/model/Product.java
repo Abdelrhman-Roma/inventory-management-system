@@ -85,7 +85,6 @@ public class Product {
     public void setExpiryDate(LocalDate expiryDate) {
         this.expiryDate = expiryDate;
     }
-
     @Override
     public String toString() {
         return "Product{" + "id=" + id + ", name='" + name + '\'' + ", quantity=" + quantity + ", price=" + price

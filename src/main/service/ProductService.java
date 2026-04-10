@@ -1,13 +1,27 @@
 package main.service;
 
-import main.model.Product;
-import main.dao.ProductDAO;
-
 import java.util.ArrayList;
 import java.util.List;
+import main.dao.ProductDAO;
+import main.model.Product;
 
 public class ProductService {
+    
+public void reduceQuantity(String productName, int qty) {
 
+    for (Product p : products) {
+        if (p.getName().equalsIgnoreCase(productName)) {
+
+            p.setQuantity(p.getQuantity() - qty);
+            break;
+        }
+    }
+
+    dao.save(products); // 👈 دي مهمة جدًا
+}
+
+    public void loadFromFile() {
+}
     private List<Product> products;
     private ProductDAO dao;
 
@@ -16,6 +30,21 @@ public class ProductService {
         products = dao.load();
         System.out.println("Loaded products = " + products.size());
     }
+ // 👇 هنا تحطها
+    public List<Product> getAllProducts() {
+        return products;
+    }
+
+public Product findByName(String name) {
+    for (Product p : products) {
+        if (p.getName().equalsIgnoreCase(name)) {
+            return p;
+        }
+    }
+    return null;
+}
+
+
 
     public String addProduct(Product product) {
 
@@ -31,9 +60,6 @@ public class ProductService {
         return "Product added successfully";
     }
 
-    public List<Product> getAllProducts() {
-        return products;
-    }
 
     // ✅ FIXED HERE
     public String updateProduct(Product updatedProduct) {

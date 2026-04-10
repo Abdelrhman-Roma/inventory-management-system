@@ -1,6 +1,9 @@
 package main.dao;
 
+
 import main.model.Product;
+
+
 
 
 import java.io.File;
@@ -8,6 +11,7 @@ import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import main.model.Product;
 
 public class ProductDAO {
 
@@ -41,7 +45,7 @@ public class ProductDAO {
 
         try {
             File file = new File(FILE_NAME);
-
+            System.out.println("Reading from: " + file.getAbsolutePath());
             if (!file.exists()) return products;
 
             Scanner scanner = new Scanner(file);

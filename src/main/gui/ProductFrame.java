@@ -8,18 +8,20 @@ import java.util.List;
 
 import main.model.Product;
 import main.service.ProductService;
+import main.dao.CategoryDAO;
 
 public class ProductFrame extends JFrame {
 
-    ProductService productService; // بدون new هنا
+    ProductService productService;
 
-    JTextField idField, nameField, quantityField, priceField, categoryField, productionField, expiryField;
+    JTextField idField, nameField, quantityField, priceField, productionField, expiryField;
+    JComboBox<String> categoryBox; // ✅ بدل TextField
     JTable table;
     DefaultTableModel model;
 
     public ProductFrame() {
 
-        productService = new ProductService(); // هنا الحل
+        productService = new ProductService();
 
         setTitle("Product Management");
         setSize(900,650);
@@ -39,8 +41,17 @@ public class ProductFrame extends JFrame {
         addLabel("Price:", 150);
         priceField = addField(150, 150);
 
+        // ✅ Category ComboBox
         addLabel("Category:", 190);
-        categoryField = addField(150, 190);
+        categoryBox = new JComboBox<>();
+        categoryBox.setBounds(150, 190, 150, 30);
+        add(categoryBox);
+
+        // ✅ تحميل الكاتيجوري من CSV
+        CategoryDAO categoryDAO = new CategoryDAO();
+        for (main.model.Category cat : categoryDAO.getAllCategories()) {
+        categoryBox.addItem(cat.getName());
+        }
 
         addLabel("Production (YYYY-MM-DD):", 230);
         productionField = addField(200, 230);
@@ -113,14 +124,13 @@ public class ProductFrame extends JFrame {
                         nameField.getText(),
                         Integer.parseInt(quantityField.getText()),
                         Double.parseDouble(priceField.getText()),
-                        categoryField.getText(),
+                        (String) categoryBox.getSelectedItem(), // ✅
                         LocalDate.parse(productionField.getText()),
                         LocalDate.parse(expiryField.getText())
                 );
 
                 String msg = productService.addProduct(p);
                 JOptionPane.showMessageDialog(this, msg);
-
                 loadTable(productService.getAllProducts());
 
             } catch(Exception ex) {
@@ -135,13 +145,12 @@ public class ProductFrame extends JFrame {
                         nameField.getText(),
                         Integer.parseInt(quantityField.getText()),
                         Double.parseDouble(priceField.getText()),
-                        categoryField.getText(),
+                        (String) categoryBox.getSelectedItem(), // ✅
                         LocalDate.parse(productionField.getText()),
                         LocalDate.parse(expiryField.getText())
                 );
 
                 String msg = productService.updateProduct(p);
-
                 JOptionPane.showMessageDialog(this, msg);
                 loadTable(productService.getAllProducts());
 
@@ -154,7 +163,6 @@ public class ProductFrame extends JFrame {
             try {
                 String msg = productService.deleteProduct(Integer.parseInt(idField.getText()));
                 JOptionPane.showMessageDialog(this, msg);
-
                 loadTable(productService.getAllProducts());
             } catch(Exception ex) {
                 JOptionPane.showMessageDialog(this, "Invalid ID");
@@ -170,8 +178,9 @@ public class ProductFrame extends JFrame {
             loadTable(productService.searchByName(nameField.getText()));
         });
 
+        // ✅ البحث بالكاتيجوري من ComboBox
         searchCatBtn.addActionListener(e -> {
-            loadTable(productService.searchByCategory(categoryField.getText()));
+            loadTable(productService.searchByCategory((String) categoryBox.getSelectedItem()));
         });
 
         searchExpiryBtn.addActionListener(e -> {
@@ -224,15 +233,13 @@ public class ProductFrame extends JFrame {
                 nameField.setText(model.getValueAt(row,1).toString());
                 quantityField.setText(model.getValueAt(row,2).toString());
                 priceField.setText(model.getValueAt(row,3).toString());
-                categoryField.setText(model.getValueAt(row,4).toString());
+                categoryBox.setSelectedItem(model.getValueAt(row,4).toString()); // ✅
                 productionField.setText(model.getValueAt(row,5).toString());
                 expiryField.setText(model.getValueAt(row,6).toString());
             }
         });
 
         setVisible(true);
-
-        // مهم جدًا
         loadTable(productService.getAllProducts());
     }
 
