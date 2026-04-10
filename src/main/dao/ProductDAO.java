@@ -1,5 +1,11 @@
 package main.dao;
 
+
+import main.model.Product;
+
+
+
+
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
@@ -9,7 +15,8 @@ import main.model.Product;
 
 public class ProductDAO {
 
-   private final String FILE_NAME = "products.csv";
+    private final String FILE_NAME = "products.csv";
+
     public void save(List<Product> products) {
         try {
             FileWriter writer = new FileWriter(FILE_NAME);
@@ -45,6 +52,7 @@ public class ProductDAO {
 
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
+
                 String[] data = line.split(",");
 
                 Product p = new Product(
@@ -53,14 +61,21 @@ public class ProductDAO {
                         Integer.parseInt(data[2]),
                         Double.parseDouble(data[3]),
                         data[4],
+
+
                         java.time.LocalDate.parse(data[5]),
                         java.time.LocalDate.parse(data[6])
+
                 );
 
                 products.add(p);
             }
 
+
+       
+
             scanner.close();
+
 
         } catch (Exception e) {
             e.printStackTrace();
