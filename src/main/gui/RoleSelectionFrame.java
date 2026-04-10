@@ -4,7 +4,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-
 import main.service.ProductService;
 
 public class RoleSelectionFrame extends JFrame {
@@ -18,7 +17,6 @@ public class RoleSelectionFrame extends JFrame {
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        // Save data when closing (NO SAVE NEEDED NOW)
         ProductService productService = new ProductService();
         this.addWindowListener(new WindowAdapter() {
             @Override
@@ -47,17 +45,17 @@ public class RoleSelectionFrame extends JFrame {
 
         add(panel, BorderLayout.CENTER);
 
-        // Admin Button Action
+        // 1. زرار الـ Admin (بيفتح اللوجين الأول)
         adminBtn.addActionListener(e -> {
             selectedRole = "ADMIN";
             new LoginFrame();
             dispose();
         });
 
-        // Client Button Action
+        // 2. زرار الـ Client (بيفتح الداشبورد مباشرة بدون باسورد)
         clientBtn.addActionListener(e -> {
             selectedRole = "CLIENT";
-            new LoginFrame();
+            new ClientDashboard(); // هنا التغيير: بيفتح الـ 6 زراير فوراً
             dispose();
         });
 

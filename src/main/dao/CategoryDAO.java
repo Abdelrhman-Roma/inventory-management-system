@@ -6,7 +6,7 @@ import main.model.Category;
 
 public class CategoryDAO {
 
-    private final String FILE = "C:/Users/PC/Desktop/computer science/Inventory-Management-System-project/inventory-management-system/categories.csv";
+    private final String FILE = "categories.csv";
 
     public void addCategory(Category c) {
 
