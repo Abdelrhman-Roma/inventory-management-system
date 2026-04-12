@@ -1,152 +1,174 @@
 package main.service;
 
-import java.time.LocalDate; 
-import java.util.ArrayList; 
-import java.util.Scanner; 
-import main.model.Product; 
-import main.model.client; 
-import main.model.order; 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import main.model.Client;
+import main.model.order;
+import main.model.Product;
+import main.dao.OrderDAO; 
+import java.io.*;
+import javax.swing.JOptionPane;
 
-public class ClientService { 
+public class ClientService {
 
-    private ArrayList<client> clients = new ArrayList<>(); 
-    private ArrayList<order> orders = new ArrayList<>(); 
-    private ArrayList<Product> products = new ArrayList<>(); 
+    private ArrayList<Client> clients = new ArrayList<>();
+    private ArrayList<order> orders = new ArrayList<>();
+    private OrderDAO orderDAO = new OrderDAO(); 
+    private Client currentClient;
+    private int nextOrderId = 1; // ده الرقم اللي هنثبته لكل السلة
+    private int nextClientId = 1;
 
-    private Scanner input = new Scanner(System.in); 
-    private client currentClient = null; 
-    private int nextOrderId = 1; 
+    public ClientService() {
+        loadFromFile();
+        this.orders = orderDAO.getAllOrders(); 
+        
+        if (!orders.isEmpty()) {
+            this.nextOrderId = orders.get(orders.size() - 1).getOrderId() + 1;
+        }
+    }
 
-    public ClientService() { // constructor
+    // ================= 1. REGISTER CLIENT =================
+    public boolean registerClient(String name, String email, String password) {
+        for (Client c : clients) {
+            if (c.getEmail().trim().equalsIgnoreCase(email.trim())) return false; 
+        }
+        Client newClient = new Client(nextClientId++, name, email, password);
+        clients.add(newClient);
+        saveClientsToFile();
+        return true; 
+    }
 
-       
-        products.add(new Product(1, "Milk", 10, 20.0, "Dairy",
-                LocalDate.of(2024, 1, 1),
-                LocalDate.of(2024, 2, 1)));
+    // ================= 2. CREATE ORDER (التعديل هنا) =================
+    public void createOrder(String productName, int qty) {
+        if (currentClient == null) return;
+        Product selected = main.Main.productService.findByName(productName);
 
-        products.add(new Product(2, "Bread", 15, 5.0, "Food",
-                LocalDate.of(2024, 1, 5),
-                LocalDate.of(2024, 1, 20)));
-    
-         products.add(new Product(3, "yogurt", 50, 15, "Dairy",
-                LocalDate.of(2024, 1, 5),
-                LocalDate.of(2024, 1, 20)));
-    
-    
+        if (selected != null) {
+            // شلنا الـ ++ من هنا عشان كل الأصناف تاخد نفس الـ nextOrderId الحالي
+            order newOrder = new order(nextOrderId, currentClient.getName(), selected, qty);
+            orders.add(newOrder);
+            orderDAO.addOrder(newOrder); 
+        }
+    }
+
+    // ميثود جديدة بنناديها "مرة واحدة" بعد ما نخلص الـ Loop بتاع الشراء
+    public void finalizeOrder() {
+        this.nextOrderId++; 
+    }
+
+    // ================= 3. SECURE UPDATE =================
+    public boolean updateClientSecure(int id, String oldPass, String name, String email, String newPass) {
+        for (Client c : clients) {
+            if (c.getId() == id && c.getPassword().equals(oldPass)) {
+                if (name != null && !name.trim().isEmpty()) c.setName(name);
+                if (email != null && !email.trim().isEmpty()) c.setEmail(email);
+                if (newPass != null && !newPass.trim().isEmpty()) c.setPassword(newPass);
+                saveClientsToFile();
+                return true;
             }
-
-    // ================= REGISTER =================
-    public void register() {
-
-        System.out.print("Enter username: ");
-        String username = input.nextLine();
-
-        System.out.print("Enter password: ");
-        String password = input.nextLine();
-
-        clients.add(new client(username, password));
-
-        System.out.println("User Registered!");
+        }
+        return false; 
     }
 
-    // ================= LOGIN =================
-    public void login() {
-
-        while (true) { 
-
-            System.out.print("Enter username: ");
-            String username = input.nextLine();
-
-            System.out.print("Enter password: ");
-            String password = input.nextLine();
-
-            boolean found = false;
-
-            for (client c : clients) {
-
-                if (c.getUsername().equals(username) && c.getPassword().equals(password)) {
-                    currentClient = c;
-                    System.out.println("Login successful!");
-                    found = true;
-                    break;
-                }
-            }
-
-            if (found) break;
-
-            System.out.println("Wrong data, try again!");
-        }
-    }
-
-    // ================= EDIT =================
-    public void editClientData() {
-
-        if (currentClient == null) {
-            System.out.println("Login first!");
-            return;
-        }
-
-        System.out.print("Enter new username: ");
-        String newUser = input.nextLine();
-
-        System.out.print("Enter new password: ");
-        String newPass = input.nextLine();
-
-        currentClient.editData(newUser, newPass);
-
-        System.out.println("Data updated!");
-    }
-
-    // ================= CREATE ORDER =================
-    public void createOrder() {
-
-        if (currentClient == null) {
-            System.out.println("Login first!");
-            return;
-        }
-
-        System.out.println("\nAvailable Products:");
-
-        for (Product p : products) {
-            System.out.println(p.getId() + " - " + p.getName() +
-                    " - Price: " + p.getPrice() +
-                    " - Qty: " + p.getQuantity());
-        }
-
-        System.out.print("Enter product id: ");
-        int id = input.nextInt();
-
-        System.out.print("Enter quantity: ");
-        int qty = input.nextInt();
-        input.nextLine();
-
-        Product selected = null;
-
-        for (Product p : products) {
-            if (p.getId() == id) {
-                selected = p;
+    // ================= 4. INVOICE (الفاتورة) =================
+    public String getInvoiceText() {
+        if (currentClient == null || orders.isEmpty()) return "No orders found!";
+        
+        int lastId = -1;
+        // بنجيب آخر ID متسجل للعميل ده
+        for (int i = orders.size() - 1; i >= 0; i--) {
+            if (orders.get(i).getUsername().equals(currentClient.getName())) {
+                lastId = orders.get(i).getOrderId();
                 break;
             }
         }
 
-        if (selected == null) {
-            System.out.println("Product not found!");
-            return;
+        if (lastId == -1) return "No recent orders.";
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("--- RECEIPT (Order #").append(lastId).append(") ---\n");
+        sb.append("Customer: ").append(currentClient.getName()).append("\n");
+        sb.append("--------------------------------\n");
+
+        double grandTotal = 0;
+        for (order o : orders) {
+            if (o.getOrderId() == lastId) {
+                sb.append("- ").append(o.getProduct().getName())
+                  .append(" x").append(o.getQuantity())
+                  .append(" = ").append(o.getTotalPrice()).append(" EGP\n");
+                grandTotal += o.getTotalPrice();
+            }
         }
 
-        if (qty > selected.getQuantity()) {
-            System.out.println("Not enough quantity!");
-            return;
+        sb.append("--------------------------------\n");
+        sb.append("GRAND TOTAL: ").append(grandTotal).append(" EGP\n");
+        sb.append("--------------------------------");
+
+        return sb.toString();
+    }
+
+    // ================= باقي الميثودز (Report, Login, الخ) =================
+    public String getOrderReportString() {
+        if (currentClient == null) return "Please Login First!";
+        StringBuilder sb = new StringBuilder();
+        sb.append("================================================================================\n");
+        sb.append("                      ORDER REPORT FOR: ").append(currentClient.getName().toUpperCase()).append("\n");
+        sb.append("================================================================================\n");
+        sb.append(String.format("%-8s %-15s %-6s %-12s %-12s\n", "OrdID", "Product", "Qty", "Total", "Date"));
+        sb.append("--------------------------------------------------------------------------------\n");
+        boolean hasOrders = false;
+        for (order o : orders) {
+            if (o.getUsername().equals(currentClient.getName())) {
+                sb.append(String.format("%-8s %-15s %-6s %-12s %-12s\n", 
+                          o.getOrderId(), o.getProduct().getName(), 
+                          o.getQuantity(), o.getTotalPrice() + " EGP", o.getOrderDate()));
+                hasOrders = true;
+            }
         }
+        return hasOrders ? sb.toString() : "No orders found.";
+    }
 
-        
-        order newOrder = new order(nextOrderId++, currentClient.getUsername(), selected, qty);
+    public boolean loginCheck(String username, String password) {
+        for (Client c : clients) {
+            if (c.getName().equals(username) && c.getPassword().equals(password)) {
+                currentClient = c;
+                return true;
+            }
+        }
+        return false;
+    }
 
-        orders.add(newOrder);
+    public void loadFromFile() {
+        clients.clear();
+        try {
+            File file = new File("Clients.csv");
+            if (!file.exists()) return;
+            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    String[] data = line.split(",");
+                    if (data.length >= 4) {
+                        int id = Integer.parseInt(data[0]);
+                        clients.add(new Client(id, data[1], data[2], data[3]));
+                        if (id >= nextClientId) nextClientId = id + 1;
+                    }
+                }
+            }
+        } catch (Exception e) { }
+    }
 
-        
-        selected.setQuantity(selected.getQuantity() - qty);
+    private void saveClientsToFile() {
+        try (PrintWriter pw = new PrintWriter(new FileWriter("Clients.csv", false))) {
+            for (Client c : clients) pw.println(c.getId() + "," + c.getName() + "," + c.getEmail() + "," + c.getPassword());
+        } catch (Exception e) { }
+    }
 
-        System.out.println("Order created successfully!");
+    public Client getCurrentClient() { return currentClient; }
+    public void logout() { this.currentClient = null; }
+    
+    public void sendEmailNotification() {
+        if (currentClient != null) {
+            JOptionPane.showMessageDialog(null, "Order Confirmation Email sent to: " + currentClient.getEmail());
+        }
     }
 }

@@ -1,4 +1,3 @@
-
 package main.model; 
 
 import java.time.LocalDate; 
@@ -57,4 +56,3 @@ public class order {
                 '}';
     }
 }
-

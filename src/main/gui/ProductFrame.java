@@ -1,15 +1,12 @@
 package main.gui;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.event.*;
 import java.time.LocalDate;
 import java.util.List;
-
 import main.model.Product;
 import main.service.ProductService;
 import main.dao.CategoryDAO;
-
 public class ProductFrame extends JFrame {
 
     ProductService productService;

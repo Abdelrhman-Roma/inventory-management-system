@@ -11,7 +11,6 @@ public class CategoryFrame extends JFrame {
     private JTextField idField;
     private JTextField nameField;
 
-
     private JTable table;
     private DefaultTableModel tableModel;
 
@@ -34,7 +33,6 @@ public class CategoryFrame extends JFrame {
         JButton addBtn = new JButton("Add");
         JButton updateBtn = new JButton("Update");
         JButton deleteBtn = new JButton("Delete");
-        JButton backBtn = new JButton("Back");
         backBtn = new JButton("Back");
 
         add(idLabel);
@@ -46,8 +44,6 @@ public class CategoryFrame extends JFrame {
         add(deleteBtn);
         add(backBtn);
 
-        // Table
-
         tableModel = new DefaultTableModel();
         tableModel.addColumn("ID");
         tableModel.addColumn("Name");
@@ -58,14 +54,18 @@ public class CategoryFrame extends JFrame {
 
         add(scrollPane);
 
-        // Buttons
-
         addBtn.addActionListener(e -> {
 
             int id = Integer.parseInt(idField.getText());
             String name = nameField.getText();
 
-            service.addCategory(id,name);
+            boolean added = service.addCategory(id,name);
+
+            if(!added){
+
+                JOptionPane.showMessageDialog(this,"ID already exists");
+
+            }
 
             refreshTable();
 
@@ -96,13 +96,14 @@ public class CategoryFrame extends JFrame {
 
             dispose();
 
-            new AdminDashboard(); 
+            new AdminDashboard();
 
         });
 
         refreshTable();
 
         setVisible(true);
+
     }
 
     private void refreshTable() {
@@ -112,8 +113,10 @@ public class CategoryFrame extends JFrame {
         for (Category c : service.getAllCategories()) {
 
             Object[] row = {
+
                     c.getId(),
                     c.getName()
+
             };
 
             tableModel.addRow(row);
