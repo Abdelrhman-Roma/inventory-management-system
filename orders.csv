@@ -1,0 +1,10 @@
+OrderID,ClientID,ProductID,Quantity,TotalPrice,OrderDate
+1,2,beef,3,600.0,2026-04-10
+1,2,sugar,2,30.0,2026-04-10
+2,2,orange,1,9.25,2026-04-10
+2,2,milk,2,200.5,2026-04-10
+3,2,pasta,2,60.0,2026-04-10
+4,omar,potato,10,35.0,2026-04-11
+4,omar,tomato,5,25.0,2026-04-11
+5,omar,tomato,5,25.0,2026-04-12
+5,omar,apple,5,50.0,2026-04-12
