@@ -123,26 +123,52 @@ private List<order> orders = new ArrayList<>();
 // =======================//
 
 // Offer -> Ghayaty//
-   public void addOffer(int productId, double discount, String start, String end) {
+ public String addOffer(int productId, double discount, String start, String end) {
 
     List<Product> products = productDao.load();
 
-    for (Product p : products) {
-
-        if (p.getId() == productId) {
-
-            double oldPrice = p.getPrice();
-            double newPrice = oldPrice - (oldPrice * discount / 100);
-
-            p.setPrice(newPrice);
-
-            System.out.println("Offer Applied on " + p.getName() +
-                    " Old Price: " + oldPrice +
-                    " New Price: " + newPrice);
-        }
+    if (products == null || products.isEmpty()) {
+        return "❌ No products found!";
     }
 
-    // save updated products back to CSV
-    productDao.save(products);
-     }
+    // 1) check product exists
+    Product selected = null;
+    for (Product p : products) {
+        if (p.getId() == productId) {
+            selected = p;
+            break;
+        }
+    }
+    if (selected == null) {
+        return "❌ Product ID not found!";
+    }
+
+    // 2) discount range
+    if (discount <= 0 || discount > 100) {
+        return "❌ Discount must be between 1 and 100";
+    }
+
+    // 3) dates (basic check)
+    if (start == null || start.trim().isEmpty() ||
+        end == null || end.trim().isEmpty()) {
+        return "❌ Dates cannot be empty";
+    }
+
+    // 4) apply discount
+    double oldPrice = selected.getPrice();
+    double newPrice = oldPrice - (oldPrice * discount / 100.0);
+    selected.setPrice(newPrice);
+
+    // 5) save safely
+    try {
+        productDao.save(products);
+    } catch (Exception e) {
+        return "❌ Failed to save data";
+    }
+
+    return "✅ Offer applied!\n" +
+           "Product: " + selected.getName() +
+           "\nOld: " + oldPrice +
+           "\nNew: " + newPrice;
+}
 }

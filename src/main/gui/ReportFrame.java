@@ -59,21 +59,34 @@ panel.add(offerBtn);
     outputArea.setText(adminService.generateProfitReport());
         });
 
-       offerBtn.addActionListener(e -> {
+    offerBtn.addActionListener(e -> {
 
-    String id = JOptionPane.showInputDialog("Enter Product ID:");
-    String discount = JOptionPane.showInputDialog("Enter Discount %:");
-    String start = JOptionPane.showInputDialog("Start Date:");
-    String end = JOptionPane.showInputDialog("End Date:");
+    try {
+        String idStr = JOptionPane.showInputDialog("Enter Product ID:");
+        String disStr = JOptionPane.showInputDialog("Enter Discount %:");
+        String start = JOptionPane.showInputDialog("Start Date:");
+        String end = JOptionPane.showInputDialog("End Date:");
 
-    adminService.addOffer(
-            Integer.parseInt(id),
-            Double.parseDouble(discount),
-            start,
-            end
-    );
+        // check empty before parsing
+        if (idStr == null || disStr == null ||
+            idStr.trim().isEmpty() || disStr.trim().isEmpty()) {
 
-    JOptionPane.showMessageDialog(this, "Offer Applied Successfully!");
+            JOptionPane.showMessageDialog(this, "❌ Input cannot be empty");
+            return;
+        }
+
+        int id = Integer.parseInt(idStr.trim());
+        double discount = Double.parseDouble(disStr.trim());
+
+        String result = adminService.addOffer(id, discount, start, end);
+
+        JOptionPane.showMessageDialog(this, result);
+
+    } catch (NumberFormatException ex) {
+        JOptionPane.showMessageDialog(this, "❌ Enter numbers only!");
+    } catch (Exception ex) {
+        JOptionPane.showMessageDialog(this, "❌ Unexpected error!");
+    }
 });
 
         setVisible(true);
