@@ -130,7 +130,7 @@ public Product findByName(String name) {
         List<Product> result = new ArrayList<>();
 
         for (Product p : products) {
-            if (p.getExpiryDate().isBefore(date)) {
+            if (p.getExpiryDate() != null && p.getExpiryDate().equals(date)) {
                 result.add(p);
             }
         }
@@ -143,7 +143,7 @@ public Product findByName(String name) {
         List<Product> result = new ArrayList<>();
 
         for (Product p : products) {
-            if (p.getProductionDate().isBefore(date)) {
+            if (p.getProductionDate() != null && p.getProductionDate().equals(date)) {
                 result.add(p);
             }
         }
@@ -155,12 +155,29 @@ public Product findByName(String name) {
 
         List<Product> result = new ArrayList<>();
         java.time.LocalDate today = java.time.LocalDate.now();
+        java.time.LocalDate alertLimit = today.plusDays(7);
 
         for (Product p : products) {
-            if (p.getExpiryDate().isBefore(today.plusDays(7))) {
+            if (p.getExpiryDate() != null
+                    && !p.getExpiryDate().isBefore(today)
+                    && !p.getExpiryDate().isAfter(alertLimit)) {
                 result.add(p);
             }
         }
+        return result;
+    }
+
+    public List<Product> getExpiredProducts() {
+
+        List<Product> result = new ArrayList<>();
+        java.time.LocalDate today = java.time.LocalDate.now();
+
+        for (Product p : products) {
+            if (p.getExpiryDate() != null && p.getExpiryDate().isBefore(today)) {
+                result.add(p);
+            }
+        }
+
         return result;
     }
 

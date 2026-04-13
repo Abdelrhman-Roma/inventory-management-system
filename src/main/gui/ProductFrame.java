@@ -12,7 +12,7 @@ public class ProductFrame extends JFrame {
     ProductService productService;
 
     JTextField idField, nameField, quantityField, priceField, productionField, expiryField;
-    JComboBox<String> categoryBox; // ✅ بدل TextField
+    JComboBox<String> categoryBox; // 
     JTable table;
     DefaultTableModel model;
 
@@ -38,13 +38,13 @@ public class ProductFrame extends JFrame {
         addLabel("Price:", 150);
         priceField = addField(150, 150);
 
-        // ✅ Category ComboBox
+    
         addLabel("Category:", 190);
         categoryBox = new JComboBox<>();
         categoryBox.setBounds(150, 190, 150, 30);
         add(categoryBox);
 
-        // ✅ تحميل الكاتيجوري من CSV
+        
         CategoryDAO categoryDAO = new CategoryDAO();
         for (main.model.Category cat : categoryDAO.getAllCategories()) {
         categoryBox.addItem(cat.getName());
@@ -201,23 +201,40 @@ public class ProductFrame extends JFrame {
         alertBtn.addActionListener(e -> {
 
             List<Product> low = productService.checkLowStock();
+            List<Product> expired = productService.getExpiredProducts();
             List<Product> exp = productService.checkExpiry();
 
-            String msg = "";
+            StringBuilder msg = new StringBuilder();
 
             for(Product p : low) {
-                msg += "Low Stock: " + p.getName() + " (Qty=" + p.getQuantity() + ")\n";
+                msg.append("Low Stock: ")
+                   .append(p.getName())
+                   .append(" (Qty=")
+                   .append(p.getQuantity())
+                   .append(")\n");
+            }
+
+            for(Product p : expired) {
+                msg.append("Expired: ")
+                   .append(p.getName())
+                   .append(" (Expiry=")
+                   .append(p.getExpiryDate())
+                   .append(")\n");
             }
 
             for(Product p : exp) {
-                msg += "Expiring Soon: " + p.getName() + "\n";
+                msg.append("Expiring Soon: ")
+                   .append(p.getName())
+                   .append(" (Expiry=")
+                   .append(p.getExpiryDate())
+                   .append(")\n");
             }
 
-            if(msg.isEmpty()) {
-                msg = "No Alerts";
+            if(msg.length() == 0) {
+                msg.append("No Alerts");
             }
 
-            JOptionPane.showMessageDialog(this, msg);
+            JOptionPane.showMessageDialog(this, msg.toString());
         });
 
         refreshBtn.addActionListener(e -> loadTable(productService.getAllProducts()));
