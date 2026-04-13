@@ -46,6 +46,11 @@ public class ProductService {
     }
 
     public String addProduct(Product product) {
+        String validationMessage = validateProduct(product);
+        if (validationMessage != null) {
+            return validationMessage;
+        }
+
         for (Product p : products) {
             if (p.getId() == product.getId()) {
                 return "Product with this ID already exists";
@@ -58,6 +63,11 @@ public class ProductService {
     }
 
     public String updateProduct(Product updatedProduct) {
+        String validationMessage = validateProduct(updatedProduct);
+        if (validationMessage != null) {
+            return validationMessage;
+        }
+
         for (Product p : products) {
             if (p.getId() == updatedProduct.getId()) {
                 p.setName(updatedProduct.getName());
@@ -172,5 +182,27 @@ public class ProductService {
             }
         }
         return result;
+    }
+
+    private String validateProduct(Product product) {
+        if (product.getName() == null || product.getName().trim().isEmpty()) {
+            return "Product name is required";
+        }
+
+        if (product.getQuantity() < 0) {
+            return "Quantity cannot be negative";
+        }
+
+        if (product.getPrice() < 0) {
+            return "Price cannot be negative";
+        }
+
+        if (product.getProductionDate() != null
+                && product.getExpiryDate() != null
+                && product.getExpiryDate().isBefore(product.getProductionDate())) {
+            return "Expiry date cannot be before production date";
+        }
+
+        return null;
     }
 }
