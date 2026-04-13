@@ -1,13 +1,12 @@
 package main.service;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import main.model.Client;
-import main.model.order;
-import main.model.Product;
-import main.dao.OrderDAO; 
 import java.io.*;
+import java.util.ArrayList;
 import javax.swing.JOptionPane;
+import main.dao.OrderDAO;
+import main.model.Client;
+import main.model.Product;
+import main.model.order;
 
 public class ClientService {
 
@@ -40,17 +39,26 @@ public class ClientService {
 
     // ================= 2. CREATE ORDER (التعديل هنا) =================
     public void createOrder(String productName, int qty) {
-        if (currentClient == null) return;
-        Product selected = main.Main.productService.findByName(productName);
+    if (currentClient == null) return;
 
-        if (selected != null) {
-            // شلنا الـ ++ من هنا عشان كل الأصناف تاخد نفس الـ nextOrderId الحالي
-            order newOrder = new order(nextOrderId, currentClient.getName(), selected, qty);
-            orders.add(newOrder);
-            orderDAO.addOrder(newOrder); 
+    Product selected = main.Main.productService.findByName(productName);
+
+    if (selected != null) {
+
+        // ✅ check الكمية
+        if (qty > selected.getQuantity()) {
+            JOptionPane.showMessageDialog(null, "Not enough stock!");
+            return;
         }
-    }
 
+        // ✅ خصم الكمية من المخزون
+        selected.setQuantity(selected.getQuantity() - qty);
+
+        order newOrder = new order(nextOrderId, currentClient.getName(), selected, qty);
+        orders.add(newOrder);
+        orderDAO.addOrder(newOrder); 
+    }
+}
     // ميثود جديدة بنناديها "مرة واحدة" بعد ما نخلص الـ Loop بتاع الشراء
     public void finalizeOrder() {
         this.nextOrderId++; 

@@ -82,7 +82,6 @@ public class ClientDashboard extends JFrame {
         add(panel);
         setVisible(true);
     }
-
     private JButton createStyledButton(String text) {
         JButton btn = new JButton(text);
         btn.setAlignmentX(Component.CENTER_ALIGNMENT);

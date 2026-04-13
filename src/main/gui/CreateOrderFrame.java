@@ -86,36 +86,50 @@ public class CreateOrderFrame extends JFrame {
         // ================= الأكشن (Actions) =================
 
         // 1. زرار إضافة للسلة
-        addBtn.addActionListener(e -> {
-            try {
-                String productName = (String) productCombo.getSelectedItem();
-                if (productName == null) return;
+       addBtn.addActionListener(e -> {
+    try {
+        String productName = (String) productCombo.getSelectedItem();
+        if (productName == null) return;
 
-                int qty = Integer.parseInt(quantityField.getText().trim());
-                if (qty <= 0) throw new NumberFormatException();
+        int qty = Integer.parseInt(quantityField.getText().trim());
+        if (qty <= 0) throw new NumberFormatException();
 
-                Product p = Main.productService.findByName(productName);
-                if (p == null) return;
+        Product p = Main.productService.findByName(productName);
+        if (p == null) return;
 
-                // بنبعت اسم العميل الحالي عشان الأوردر يتسجل باسمه صح في الـ CSV
-                String currentUserName = Main.clientService.getCurrentClient().getName();
-                
-                // إنشاء أوردر مؤقت (ID = 0)
-                order newTempOrder = new order(0, currentUserName, p, qty); 
-                cart.add(newTempOrder);
-                
-                cartArea.append(String.format("• %-15s x%-3d (%s EGP)\n", p.getName(), qty, (p.getPrice() * qty)));
+        // ✅ check الكمية قبل الإضافة
+        int alreadyInCart = 0;
 
-                double total = 0;
-                for (order o : cart) total += o.getTotalPrice();
-                totalLabel.setText("Total: " + total + " EGP");
-                quantityField.setText("");
-                
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Please enter a valid positive number!");
+        for (order o : cart) {
+         if (o.getProduct().getName().equalsIgnoreCase(productName)) {
+        alreadyInCart += o.getQuantity();
+         }
+        }
+        int available = p.getQuantity() - alreadyInCart;
+
+        if (qty > available) {
+            JOptionPane.showMessageDialog(this,
+        "Not enough stock! Only " + available + " items available.");
+            return;
             }
-        });
 
+        String currentUserName = Main.clientService.getCurrentClient().getName();
+
+        order newTempOrder = new order(0, currentUserName, p, qty); 
+        cart.add(newTempOrder);
+
+        cartArea.append(String.format("• %-15s x%-3d (%s EGP)\n", p.getName(), qty, (p.getPrice() * qty)));
+
+        double total = 0;
+        for (order o : cart) total += o.getTotalPrice();
+        totalLabel.setText("Total: " + total + " EGP");
+
+        quantityField.setText("");
+
+    } catch (NumberFormatException ex) {
+        JOptionPane.showMessageDialog(this, "Please enter a valid positive number!");
+    }
+});
         // 2. زرار الشراء النهائي
         createBtn.addActionListener(e -> {
             if (cart.isEmpty()) {
