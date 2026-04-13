@@ -1,12 +1,18 @@
 package main.gui;
-import javax.swing.*;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 import main.Main;
 
 public class LoginFrame extends JFrame {
 
     public LoginFrame() {
         setTitle("Login");
-        setSize(400, 350); // زودنا الطول بسيط عشان زرار الـ Back
+        setSize(400, 350);
         setLayout(null);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -31,41 +37,34 @@ public class LoginFrame extends JFrame {
         loginBtn.setBounds(180, 160, 100, 30);
         add(loginBtn);
 
-        // إضافة زرار الـ Back بنفس ستايلك
         JButton backBtn = new JButton("Back");
         backBtn.setBounds(50, 160, 100, 30);
         add(backBtn);
 
-        // برمجة زرار الـ Login عشان يقرأ من الـ CSV
         loginBtn.addActionListener(e -> {
             String user = userField.getText();
             String pass = new String(passField.getPassword());
             String role = RoleSelectionFrame.selectedRole;
 
-            // 1. دخول الـ Admin (ثابت زي ما هو)
             if (role.equals("ADMIN") && user.equals("admin") && pass.equals("1234")) {
                 JOptionPane.showMessageDialog(this, "Welcome Admin");
                 new AdminDashboard();
                 dispose();
-            } 
-            // 2. دخول الـ Client (بيقرأ من الـ CSV بتاعك)
-            else if (role.equals("CLIENT")) {
+            } else if (role.equals("CLIENT")) {
                 if (Main.clientService.loginCheck(user, pass)) {
                     JOptionPane.showMessageDialog(this, "Welcome " + user + "! Login Successful.");
-                    new ClientDashboard(); // بيفتح الـ 6 زراير
+                    new ClientDashboard();
                     dispose();
                 } else {
                     JOptionPane.showMessageDialog(this, "User not found in Clients.csv or Incorrect Password!");
                 }
-            } 
-            else {
+            } else {
                 JOptionPane.showMessageDialog(this, "Invalid Data!");
             }
         });
 
-        // برمجة زرار الـ Back
         backBtn.addActionListener(e -> {
-            new RoleSelectionFrame(); // يرجعك تختار الدور تاني
+            new RoleSelectionFrame();
             dispose();
         });
 

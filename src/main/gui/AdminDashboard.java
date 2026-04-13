@@ -27,7 +27,7 @@ public class AdminDashboard extends JFrame {
         JButton logoutBtn = new JButton("Logout");
 
         Font buttonFont = new Font("Arial", Font.BOLD, 14);
-        JButton[] buttons = { productsBtn, categoriesBtn, suppliersBtn, reportsBtn, logoutBtn };
+        JButton[] buttons = {productsBtn, categoriesBtn, suppliersBtn, reportsBtn, logoutBtn};
 
         for (JButton button : buttons) {
             button.setFont(buttonFont);

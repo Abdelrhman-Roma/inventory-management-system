@@ -1,9 +1,13 @@
 package main.gui;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.GridLayout;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 import main.Main;
-import main.service.ClientService;
 
 public class ClientFrame extends JFrame {
 
@@ -13,7 +17,6 @@ public class ClientFrame extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new GridLayout(5, 2, 10, 10));
 
-        // الحقول
         JTextField nameField = new JTextField();
         JTextField emailField = new JTextField();
         JPasswordField passwordField = new JPasswordField();
@@ -31,7 +34,6 @@ public class ClientFrame extends JFrame {
         add(registerBtn);
         add(backBtn);
 
-        // --- الأكشن بتاع التسجيل ---
         registerBtn.addActionListener(e -> {
             String name = nameField.getText();
             String email = emailField.getText();
@@ -42,19 +44,17 @@ public class ClientFrame extends JFrame {
                 return;
             }
 
-            // بننادي الدالة من السيرفيس اللي في المين
             boolean success = Main.clientService.registerClient(name, email, password);
 
             if (success) {
                 JOptionPane.showMessageDialog(this, "Registered Successfully!");
-                dispose(); // يقفل الشاشة
-                new ClientDashboard(); // يفتح الداشبورد تاني
+                dispose();
+                new ClientDashboard();
             } else {
                 JOptionPane.showMessageDialog(this, "Email already exists!");
             }
         });
 
-        // --- زرار الرجوع ---
         backBtn.addActionListener(e -> {
             dispose();
             new ClientDashboard();

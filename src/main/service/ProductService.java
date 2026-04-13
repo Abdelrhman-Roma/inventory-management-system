@@ -1,27 +1,13 @@
 package main.service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import main.dao.ProductDAO;
 import main.model.Product;
 
 public class ProductService {
-    
-public void reduceQuantity(String productName, int qty) {
 
-    for (Product p : products) {
-        if (p.getName().equalsIgnoreCase(productName)) {
-
-            p.setQuantity(p.getQuantity() - qty);
-            break;
-        }
-    }
-
-    dao.save(products); // 👈 دي مهمة جدًا
-}
-
-    public void loadFromFile() {
-}
     private List<Product> products;
     private ProductDAO dao;
 
@@ -30,24 +16,36 @@ public void reduceQuantity(String productName, int qty) {
         products = dao.load();
         System.out.println("Loaded products = " + products.size());
     }
- // 👇 هنا تحطها
+
+    public void reduceQuantity(String productName, int qty) {
+        for (Product p : products) {
+            if (p.getName().equalsIgnoreCase(productName)) {
+                p.setQuantity(p.getQuantity() - qty);
+                break;
+            }
+        }
+
+        dao.save(products);
+    }
+
+    public void loadFromFile() {
+        products = dao.load();
+    }
+
     public List<Product> getAllProducts() {
         return products;
     }
 
-public Product findByName(String name) {
-    for (Product p : products) {
-        if (p.getName().equalsIgnoreCase(name)) {
-            return p;
+    public Product findByName(String name) {
+        for (Product p : products) {
+            if (p.getName().equalsIgnoreCase(name)) {
+                return p;
+            }
         }
+        return null;
     }
-    return null;
-}
-
-
 
     public String addProduct(Product product) {
-
         for (Product p : products) {
             if (p.getId() == product.getId()) {
                 return "Product with this ID already exists";
@@ -56,17 +54,12 @@ public Product findByName(String name) {
 
         products.add(product);
         dao.save(products);
-
         return "Product added successfully";
     }
 
-
-    // ✅ FIXED HERE
     public String updateProduct(Product updatedProduct) {
-
         for (Product p : products) {
             if (p.getId() == updatedProduct.getId()) {
-
                 p.setName(updatedProduct.getName());
                 p.setQuantity(updatedProduct.getQuantity());
                 p.setPrice(updatedProduct.getPrice());
@@ -83,11 +76,9 @@ public Product findByName(String name) {
     }
 
     public String deleteProduct(int id) {
-
         for (int i = 0; i < products.size(); i++) {
             if (products.get(i).getId() == id) {
                 products.remove(i);
-
                 dao.save(products);
                 return "Product deleted successfully";
             }
@@ -96,10 +87,7 @@ public Product findByName(String name) {
         return "Product not found";
     }
 
-    // ================= SEARCH =================
-
     public List<Product> searchByName(String name) {
-
         List<Product> result = new ArrayList<>();
 
         for (Product p : products) {
@@ -112,7 +100,6 @@ public Product findByName(String name) {
     }
 
     public List<Product> searchByCategory(String category) {
-
         List<Product> result = new ArrayList<>();
 
         for (Product p : products) {
@@ -124,9 +111,7 @@ public Product findByName(String name) {
         return result;
     }
 
-    // ✅ ADD THESE (YOU WERE MISSING THEM)
-    public List<Product> searchByExpiryDate(java.time.LocalDate date) {
-
+    public List<Product> searchByExpiryDate(LocalDate date) {
         List<Product> result = new ArrayList<>();
 
         for (Product p : products) {
@@ -138,8 +123,7 @@ public Product findByName(String name) {
         return result;
     }
 
-    public List<Product> searchByProductionDate(java.time.LocalDate date) {
-
+    public List<Product> searchByProductionDate(LocalDate date) {
         List<Product> result = new ArrayList<>();
 
         for (Product p : products) {
@@ -152,10 +136,9 @@ public Product findByName(String name) {
     }
 
     public List<Product> checkExpiry() {
-
         List<Product> result = new ArrayList<>();
-        java.time.LocalDate today = java.time.LocalDate.now();
-        java.time.LocalDate alertLimit = today.plusDays(7);
+        LocalDate today = LocalDate.now();
+        LocalDate alertLimit = today.plusDays(7);
 
         for (Product p : products) {
             if (p.getExpiryDate() != null
@@ -168,9 +151,8 @@ public Product findByName(String name) {
     }
 
     public List<Product> getExpiredProducts() {
-
         List<Product> result = new ArrayList<>();
-        java.time.LocalDate today = java.time.LocalDate.now();
+        LocalDate today = LocalDate.now();
 
         for (Product p : products) {
             if (p.getExpiryDate() != null && p.getExpiryDate().isBefore(today)) {
@@ -182,7 +164,6 @@ public Product findByName(String name) {
     }
 
     public List<Product> checkLowStock() {
-
         List<Product> result = new ArrayList<>();
 
         for (Product p : products) {

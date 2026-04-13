@@ -9,8 +9,7 @@ public class Main {
     public static ClientService clientService = new ClientService();
 
     public static void main(String[] args) {
-
-        ProductService productService = new ProductService();
+        productService = new ProductService();
         new RoleSelectionFrame();
     }
 }
