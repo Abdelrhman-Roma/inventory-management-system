@@ -1,11 +1,6 @@
 package main.dao;
 
 
-import main.model.Product;
-
-
-
-
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
@@ -15,7 +10,7 @@ import main.model.Product;
 
 public class ProductDAO {
 
-    private final String FILE_NAME = "C:/Users/PC/Desktop/ttttt/products.csv";
+    private final String FILE_NAME = "products.csv";
 
     public void save(List<Product> products) {
         try {

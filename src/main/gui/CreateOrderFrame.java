@@ -1,10 +1,10 @@
 package main.gui;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -19,7 +19,6 @@ import javax.swing.JTextField;
 import main.Main;
 import main.model.Product;
 import main.model.order;
-
 public class CreateOrderFrame extends JFrame {
 
     private java.util.List<order> cart = new ArrayList<>();
@@ -153,41 +152,55 @@ public class CreateOrderFrame extends JFrame {
                 return;
             }
 
-            ArrayList<order> failedItems = new ArrayList<>();
-            boolean anySuccess = false;
+            ArrayList<order> updatedCart = new ArrayList<>();
+boolean anySuccess = false;
 
-            for (order o : cart) {
-                Product realProduct = Main.productService.findByName(o.getProduct().getName());
+for (order o : cart) {
+    Product realProduct = Main.productService.findByName(o.getProduct().getName());
 
-                if (realProduct != null && realProduct.getQuantity() >= o.getQuantity()) {
-                    Main.productService.reduceQuantity(o.getProduct().getName(), o.getQuantity());
-                    Main.clientService.createOrder(o.getProduct().getName(), o.getQuantity());
-                    anySuccess = true;
-                } else {
-                    failedItems.add(o);
-                }
-            }
+    if (realProduct != null) {
+
+        LocalDate today = LocalDate.now();
+        LocalDate expiry = realProduct.getExpiryDate();
+
+        // ❌ لو expired → متضيفوش للكارت
+        if (expiry.isBefore(today)) {
+            JOptionPane.showMessageDialog(this,
+                "❌ Removed expired product: " + realProduct.getName());
+            continue;
+        }
+
+        // ✅ check quantity
+        if (realProduct.getQuantity() >= o.getQuantity()) {
+            Main.productService.reduceQuantity(o.getProduct().getName(), o.getQuantity());
+            Main.clientService.createOrder(o.getProduct().getName(), o.getQuantity());
+            anySuccess = true;
+        } else {
+            updatedCart.add(o); // رجعه للكارت لو مفيش كمية
+        }
+
+    } else {
+        updatedCart.add(o);
+    }
+}
 
             if (anySuccess) {
                 Main.clientService.finalizeOrder();
                 JOptionPane.showMessageDialog(this, "Available items purchased successfully!");
             }
-
             cart.clear();
-            if (!failedItems.isEmpty()) {
-                cart.addAll(failedItems);
-                cartArea.setText("--- OUT OF STOCK ---\n");
-                for (order o : failedItems) {
-                    cartArea.append("- " + o.getProduct().getName() + " x" + o.getQuantity() + "\n");
-                }
-            } else {
-                cartArea.setText("");
-                totalLabel.setText("Total: 0 EGP");
-            }
+        cart.addAll(updatedCart);
 
-            if (!failedItems.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Some items failed due to stock issues.");
-            }
+        cartArea.setText("");
+        double total = 0;
+
+        for (order o : cart) {
+            cartArea.append("- " + o.getProduct().getName() + " x" + o.getQuantity() + "\n");
+            total += o.getTotalPrice();
+        }
+
+            totalLabel.setText("Total: " + total + " EGP");            
+
         });
 
         backBtn.addActionListener(e -> this.dispose());
