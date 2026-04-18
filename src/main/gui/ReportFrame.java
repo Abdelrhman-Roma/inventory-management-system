@@ -59,22 +59,104 @@ panel.add(offerBtn);
     outputArea.setText(adminService.generateProfitReport());
         });
 
-       offerBtn.addActionListener(e -> {
+        offerBtn.addActionListener(e -> {
+            String idText = JOptionPane.showInputDialog(this, "Enter Product ID:");
+            if (idText == null) return;
+            idText = idText.trim();
+            if (idText.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                        "Product ID is required.",
+                        "Validation Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
-    String id = JOptionPane.showInputDialog("Enter Product ID:");
-    String discount = JOptionPane.showInputDialog("Enter Discount %:");
-    String start = JOptionPane.showInputDialog("Start Date:");
-    String end = JOptionPane.showInputDialog("End Date:");
+            int productId;
+            try {
+                productId = Integer.parseInt(idText);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this,
+                        "Product ID must be a valid integer.",
+                        "Validation Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
-    adminService.addOffer(
-            Integer.parseInt(id),
-            Double.parseDouble(discount),
-            start,
-            end
-    );
+            if (!adminService.productExists(productId)) {
+                JOptionPane.showMessageDialog(this,
+                        "No product found with ID " + productId + ".",
+                        "Validation Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
-    JOptionPane.showMessageDialog(this, "Offer Applied Successfully!");
-});
+            String discountText = JOptionPane.showInputDialog(this, "Enter Discount %:");
+            if (discountText == null) return;
+            discountText = discountText.trim();
+            if (discountText.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                        "Discount is required.",
+                        "Validation Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            double discountValue;
+            try {
+                discountValue = Double.parseDouble(discountText);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this,
+                        "Discount must be a valid number.",
+                        "Validation Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            if (discountValue < 1 || discountValue > 100) {
+                JOptionPane.showMessageDialog(this,
+                        "Discount must be between 1 and 100.",
+                        "Validation Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            String start = JOptionPane.showInputDialog(this, "Start Date:");
+            if (start == null) return;
+            start = start.trim();
+            if (start.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                        "Start date is required.",
+                        "Validation Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            String end = JOptionPane.showInputDialog(this, "End Date:");
+            if (end == null) return;
+            end = end.trim();
+            if (end.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                        "End date is required.",
+                        "Validation Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            try {
+                adminService.addOffer(productId, discountValue, start, end);
+                JOptionPane.showMessageDialog(this, "Offer Applied Successfully!");
+            } catch (IllegalArgumentException ex) {
+                JOptionPane.showMessageDialog(this,
+                        ex.getMessage(),
+                        "Validation Error",
+                        JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this,
+                        "Unable to apply offer: " + ex.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        });
 
         setVisible(true);
     }

@@ -141,7 +141,7 @@ public class ClientService {
     public void loadFromFile() {
         clients.clear();
         try {
-            File file = new File("Clients.csv");
+            File file = new File("../Clients.csv");
             if (!file.exists()) return;
             try (BufferedReader br = new BufferedReader(new FileReader(file))) {
                 String line;
@@ -158,7 +158,7 @@ public class ClientService {
     }
 
     private void saveClientsToFile() {
-        try (PrintWriter pw = new PrintWriter(new FileWriter("Clients.csv", false))) {
+        try (PrintWriter pw = new PrintWriter(new FileWriter("../Clients.csv", false))) {
             for (Client c : clients) pw.println(c.getId() + "," + c.getName() + "," + c.getEmail() + "," + c.getPassword());
         } catch (Exception e) { }
     }

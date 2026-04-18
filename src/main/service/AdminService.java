@@ -1,36 +1,25 @@
 package main.service;
 
 import java.util.ArrayList;
+import java.util.List;
 import main.dao.CategoryDAO;
-import main.model.Category;
+import main.dao.OrderDAO;
 import main.dao.ProductDAO; // ghayaty for product calls
-
-// Omar Elghayaty //
+import main.model.Category;
 import main.model.Product;   // so we can use Product 
 import main.model.order;     // so we can use Order
-
-import java.util.List;       // list interface
-import java.util.ArrayList;  // actual list implementation
-// Omar Elghayaty //
 
 public class AdminService {
 
     private CategoryDAO dao = new CategoryDAO();
     private ProductDAO productDao = new ProductDAO();
-
-  
-// list to store orders temporarily ->Ghayaty
-private List<order> orders = new ArrayList<>();
+    private OrderDAO orderDao = new OrderDAO();
 
     // constructor (runs when object is created) -> Ghayaty
-    
-
     public boolean addCategory(int id, String name) {
-
         Category c = new Category(id, name);
 
         return dao.addCategory(c);
-
     }
 
     public void updateCategory(int id, String name) {
@@ -111,38 +100,58 @@ private List<order> orders = new ArrayList<>();
 
 // Profit Report -> Ghayaty //
     public String generateProfitReport() {
-
+        List<order> orders = orderDao.getAllOrders();
         double total = 0;
 
         for (order o : orders) {
             total += o.getTotalPrice();
         }
 
-        return "Total Profit: " + total;
+        return "Total Profit: " + total + "\nOrder Count: " + orders.size();
     }
 // =======================//
 
 // Offer -> Ghayaty//
-   public void addOffer(int productId, double discount, String start, String end) {
-
-    List<Product> products = productDao.load();
-
-    for (Product p : products) {
-
-        if (p.getId() == productId) {
-
-            double oldPrice = p.getPrice();
-            double newPrice = oldPrice - (oldPrice * discount / 100);
-
-            p.setPrice(newPrice);
-
-            System.out.println("Offer Applied on " + p.getName() +
-                    " Old Price: " + oldPrice +
-                    " New Price: " + newPrice);
+    public void addOffer(int productId, double discount, String start, String end) {
+        if (productId <= 0) {
+            throw new IllegalArgumentException("Product ID must be a positive integer.");
         }
+        if (discount < 1 || discount > 100) {
+            throw new IllegalArgumentException("Discount must be between 1 and 100.");
+        }
+
+        List<Product> products = productDao.load();
+        boolean found = false;
+
+        for (Product p : products) {
+            if (p.getId() == productId) {
+                found = true;
+                double oldPrice = p.getPrice();
+                double newPrice = oldPrice - (oldPrice * discount / 100);
+                p.setPrice(newPrice);
+                System.out.println("Offer Applied on " + p.getName() +
+                        " Old Price: " + oldPrice +
+                        " New Price: " + newPrice);
+                break;
+            }
+        }
+
+        if (!found) {
+            throw new IllegalArgumentException("No product found with ID " + productId + ".");
+        }
+
+        // save updated products back to CSV
+        productDao.save(products);
     }
 
-    // save updated products back to CSV
-    productDao.save(products);
-     }
+    public boolean productExists(int productId) {
+        if (productId <= 0) return false;
+        List<Product> products = productDao.load();
+        for (Product p : products) {
+            if (p.getId() == productId) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

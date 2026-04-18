@@ -33,7 +33,7 @@ public class CreateOrderFrame extends JFrame {
         totalLabel.setForeground(new Color(0, 102, 0));
 
         // تحميل الكاتيجوري
-        try (java.util.Scanner sc = new java.util.Scanner(new java.io.File("categories.csv"))) {
+        try (java.util.Scanner sc = new java.util.Scanner(new java.io.File("../categories.csv"))) {
             while (sc.hasNextLine()) {
                 String line = sc.nextLine();
                 if(line.isEmpty()) continue;

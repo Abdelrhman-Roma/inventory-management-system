@@ -7,7 +7,7 @@ import main.model.Product;
 
 public class OrderDAO {
 
-    private final String FILE = "orders.csv";
+    private final String FILE = "../orders.csv";
 
     public void addOrder(order o) {
         try (FileWriter writer = new FileWriter(FILE, true)) {

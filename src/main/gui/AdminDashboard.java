@@ -47,10 +47,10 @@ public class AdminDashboard extends JFrame {
             dispose();
         });
 
-        // supplierBtn.addActionListener(e -> {
-        //     new SupplierFrame();
-        //     dispose();
-        // });
+        supplierBtn.addActionListener(e -> {
+            new SupplierFrame();
+            dispose();
+        });
 
         reportBtn.addActionListener(e -> {
             new ReportFrame();
