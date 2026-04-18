@@ -1,58 +1,63 @@
 package main.gui;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Font;
+import java.awt.GridLayout;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 public class AdminDashboard extends JFrame {
 
     public AdminDashboard() {
-
         setTitle("Admin Dashboard");
         setSize(500, 400);
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-        //Main Panel
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(5, 1, 15, 15));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50));
 
-        //Buttons
-        JButton productBtn = new JButton("Manage Products");
-        JButton categoryBtn = new JButton("Manage Categories");
-        JButton supplierBtn = new JButton("Manage Suppliers");
-        JButton reportBtn = new JButton("Reports");
+        JButton productsBtn = new JButton("Manage Products");
+        JButton categoriesBtn = new JButton("Manage Categories");
+        JButton suppliersBtn = new JButton("Manage Suppliers");
+        JButton reportsBtn = new JButton("Reports");
         JButton logoutBtn = new JButton("Logout");
 
-        //Style
-        Font font = new Font("Arial", Font.BOLD, 14);
+        Font buttonFont = new Font("Arial", Font.BOLD, 14);
+        JButton[] buttons = {productsBtn, categoriesBtn, suppliersBtn, reportsBtn, logoutBtn};
 
-        JButton[] buttons = {productBtn, categoryBtn, supplierBtn, reportBtn, logoutBtn};
-        for (JButton btn : buttons) {
-            btn.setFont(font);
-            btn.setFocusPainted(false);
-            panel.add(btn);
+        for (JButton button : buttons) {
+            button.setFont(buttonFont);
+            button.setFocusPainted(false);
+            panel.add(button);
         }
 
         add(panel);
 
-        //Actions
-        productBtn.addActionListener(e -> {
+        productsBtn.addActionListener(e -> {
             new ProductFrame();
             dispose();
         });
 
-        categoryBtn.addActionListener(e -> {
+        categoriesBtn.addActionListener(e -> {
             new CategoryFrame();
             dispose();
         });
 
-        supplierBtn.addActionListener(e -> {
+
+        suppliersBtn.addActionListener(e -> {
             new SupplierFrame();
             dispose();
         });
 
-        reportBtn.addActionListener(e -> {
+        suppliersBtn.addActionListener(e ->
+                JOptionPane.showMessageDialog(this, "welcome to suppliers management"));
+
+
+        reportsBtn.addActionListener(e -> {
             new ReportFrame();
             dispose();
         });

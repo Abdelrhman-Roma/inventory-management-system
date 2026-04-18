@@ -1,11 +1,6 @@
 package main.dao;
 
 
-import main.model.Product;
-
-
-
-
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;

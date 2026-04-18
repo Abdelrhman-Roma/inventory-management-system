@@ -1,12 +1,24 @@
 package main.gui;
-
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import main.Main;
 import main.model.Product;
 import main.model.order;
-
 public class CreateOrderFrame extends JFrame {
 
     private java.util.List<order> cart = new ArrayList<>();
@@ -15,10 +27,9 @@ public class CreateOrderFrame extends JFrame {
         setTitle("Create Order - Client Side");
         setSize(500, 600);
         setLocationRelativeTo(null);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); 
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // --- المكونات (UI Components) ---
         JComboBox<String> categoryCombo = new JComboBox<>();
         JComboBox<String> productCombo = new JComboBox<>();
         JTextField quantityField = new JTextField();
@@ -32,13 +43,20 @@ public class CreateOrderFrame extends JFrame {
         totalLabel.setFont(new Font("Arial", Font.BOLD, 15));
         totalLabel.setForeground(new Color(0, 102, 0));
 
+
         // تحميل الكاتيجوري
         try (java.util.Scanner sc = new java.util.Scanner(new java.io.File("../categories.csv"))) {
+
+
             while (sc.hasNextLine()) {
                 String line = sc.nextLine();
-                if(line.isEmpty()) continue;
+                if (line.isEmpty()) {
+                    continue;
+                }
                 String[] data = line.split(",");
-                if(data.length > 1) categoryCombo.addItem(data[1]);
+                if (data.length > 1) {
+                    categoryCombo.addItem(data[1]);
+                }
             }
         } catch (Exception e) {
             System.out.println("Categories file error.");
@@ -66,7 +84,7 @@ public class CreateOrderFrame extends JFrame {
         JPanel centerPanel = new JPanel(new BorderLayout());
         centerPanel.add(formPanel, BorderLayout.NORTH);
         centerPanel.add(new JScrollPane(cartArea), BorderLayout.CENTER);
-        
+
         JPanel summaryPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         summaryPanel.add(totalLabel);
         centerPanel.add(summaryPanel, BorderLayout.SOUTH);
@@ -83,87 +101,115 @@ public class CreateOrderFrame extends JFrame {
         add(centerPanel, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
 
-        // ================= الأكشن (Actions) =================
-
-        // 1. زرار إضافة للسلة
         addBtn.addActionListener(e -> {
             try {
                 String productName = (String) productCombo.getSelectedItem();
-                if (productName == null) return;
+                if (productName == null) {
+                    return;
+                }
 
                 int qty = Integer.parseInt(quantityField.getText().trim());
-                if (qty <= 0) throw new NumberFormatException();
+                if (qty <= 0) {
+                    throw new NumberFormatException();
+                }
 
                 Product p = Main.productService.findByName(productName);
-                if (p == null) return;
+                if (p == null) {
+                    return;
+                }
 
-                // بنبعت اسم العميل الحالي عشان الأوردر يتسجل باسمه صح في الـ CSV
+                int alreadyInCart = 0;
+                for (order o : cart) {
+                    if (o.getProduct().getName().equalsIgnoreCase(productName)) {
+                        alreadyInCart += o.getQuantity();
+                    }
+                }
+
+                int available = p.getQuantity() - alreadyInCart;
+                if (qty > available) {
+                    JOptionPane.showMessageDialog(this,
+                            "Not enough stock! Only " + available + " items available.");
+                    return;
+                }
+
                 String currentUserName = Main.clientService.getCurrentClient().getName();
-                
-                // إنشاء أوردر مؤقت (ID = 0)
-                order newTempOrder = new order(0, currentUserName, p, qty); 
+                order newTempOrder = new order(0, currentUserName, p, qty);
                 cart.add(newTempOrder);
-                
-                cartArea.append(String.format("• %-15s x%-3d (%s EGP)\n", p.getName(), qty, (p.getPrice() * qty)));
+
+                cartArea.append(String.format("- %-15s x%-3d (%s EGP)%n", p.getName(), qty, (p.getPrice() * qty)));
 
                 double total = 0;
-                for (order o : cart) total += o.getTotalPrice();
+                for (order o : cart) {
+                    total += o.getTotalPrice();
+                }
                 totalLabel.setText("Total: " + total + " EGP");
                 quantityField.setText("");
-                
+
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this, "Please enter a valid positive number!");
             }
         });
 
-        // 2. زرار الشراء النهائي
         createBtn.addActionListener(e -> {
             if (cart.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Your cart is empty!");
                 return;
             }
 
-            ArrayList<order> failedItems = new ArrayList<>();
-            boolean anySuccess = false;
+            ArrayList<order> updatedCart = new ArrayList<>();
+boolean anySuccess = false;
 
-            for (order o : cart) {
-                Product realProduct = Main.productService.findByName(o.getProduct().getName());
-                
-                if (realProduct != null && realProduct.getQuantity() >= o.getQuantity()) {
-                    // تقليل الكمية من المخزن
-                    Main.productService.reduceQuantity(o.getProduct().getName(), o.getQuantity());
-                    // تسجيل الأوردر في الـ CSV والرامات
-                    Main.clientService.createOrder(o.getProduct().getName(), o.getQuantity());
-                    anySuccess = true;
-                } else {
-                    failedItems.add(o);
-                }
-            }
+for (order o : cart) {
+    Product realProduct = Main.productService.findByName(o.getProduct().getName());
+
+    if (realProduct != null) {
+
+        LocalDate today = LocalDate.now();
+        LocalDate expiry = realProduct.getExpiryDate();
+
+        // ❌ لو expired → متضيفوش للكارت
+        if (expiry.isBefore(today)) {
+            JOptionPane.showMessageDialog(this,
+                "❌ Removed expired product: " + realProduct.getName());
+            continue;
+        }
+
+        // ✅ check quantity
+        if (realProduct.getQuantity() >= o.getQuantity()) {
+            Main.productService.reduceQuantity(o.getProduct().getName(), o.getQuantity());
+            Main.clientService.createOrder(o.getProduct().getName(), o.getQuantity());
+            anySuccess = true;
+        } else {
+            updatedCart.add(o); // رجعه للكارت لو مفيش كمية
+        }
+
+    } else {
+        updatedCart.add(o);
+    }
+}
 
             if (anySuccess) {
-                // شلنا السطر اللي كان عامل خطأ أحمر (incrementOrderId)
+                Main.clientService.finalizeOrder();
                 JOptionPane.showMessageDialog(this, "Available items purchased successfully!");
             }
-
             cart.clear();
-            if (!failedItems.isEmpty()) {
-                cart.addAll(failedItems);
-                cartArea.setText("--- OUT OF STOCK ---\n");
-                for (order o : failedItems) {
-                    cartArea.append("• " + o.getProduct().getName() + " x" + o.getQuantity() + "\n");
-                }
-            } else {
-                cartArea.setText("");
-                totalLabel.setText("Total: 0 EGP");
-            }
+        cart.addAll(updatedCart);
 
-            if (!failedItems.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Some items failed due to stock issues.");
-            }
+        cartArea.setText("");
+        double total = 0;
+
+        for (order o : cart) {
+            cartArea.append("- " + o.getProduct().getName() + " x" + o.getQuantity() + "\n");
+            total += o.getTotalPrice();
+        }
+
+            totalLabel.setText("Total: " + total + " EGP");            
+
         });
 
         backBtn.addActionListener(e -> this.dispose());
 
-        setVisible(true); 
+        setVisible(true);
     }
-}
+ }
+

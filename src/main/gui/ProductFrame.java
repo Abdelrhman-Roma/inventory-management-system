@@ -1,27 +1,36 @@
 package main.gui;
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.event.*;
+
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.time.LocalDate;
 import java.util.List;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.table.DefaultTableModel;
+import main.dao.CategoryDAO;
 import main.model.Product;
 import main.service.ProductService;
-import main.dao.CategoryDAO;
+
 public class ProductFrame extends JFrame {
 
     ProductService productService;
 
     JTextField idField, nameField, quantityField, priceField, productionField, expiryField;
-    JComboBox<String> categoryBox; // ✅ بدل TextField
+    JComboBox<String> categoryBox;
     JTable table;
     DefaultTableModel model;
 
     public ProductFrame() {
-
         productService = new ProductService();
 
         setTitle("Product Management");
-        setSize(900,650);
+        setSize(900, 650);
         setLayout(null);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -38,16 +47,14 @@ public class ProductFrame extends JFrame {
         addLabel("Price:", 150);
         priceField = addField(150, 150);
 
-        // ✅ Category ComboBox
         addLabel("Category:", 190);
         categoryBox = new JComboBox<>();
         categoryBox.setBounds(150, 190, 150, 30);
         add(categoryBox);
 
-        // ✅ تحميل الكاتيجوري من CSV
         CategoryDAO categoryDAO = new CategoryDAO();
         for (main.model.Category cat : categoryDAO.getAllCategories()) {
-        categoryBox.addItem(cat.getName());
+            categoryBox.addItem(cat.getName());
         }
 
         addLabel("Production (YYYY-MM-DD):", 230);
@@ -56,7 +63,6 @@ public class ProductFrame extends JFrame {
         addLabel("Expiry (YYYY-MM-DD):", 270);
         expiryField = addField(200, 270);
 
-        // Buttons
         JButton addBtn = new JButton("Add");
         addBtn.setBounds(400, 30, 150, 30);
         add(addBtn);
@@ -97,7 +103,6 @@ public class ProductFrame extends JFrame {
         backBtn.setBounds(400, 390, 150, 30);
         add(backBtn);
 
-        // Table
         model = new DefaultTableModel();
         model.addColumn("ID");
         model.addColumn("Name");
@@ -112,8 +117,6 @@ public class ProductFrame extends JFrame {
         pane.setBounds(30, 420, 800, 180);
         add(pane);
 
-        // Actions
-
         addBtn.addActionListener(e -> {
             try {
                 Product p = new Product(
@@ -121,7 +124,7 @@ public class ProductFrame extends JFrame {
                         nameField.getText(),
                         Integer.parseInt(quantityField.getText()),
                         Double.parseDouble(priceField.getText()),
-                        (String) categoryBox.getSelectedItem(), // ✅
+                        (String) categoryBox.getSelectedItem(),
                         LocalDate.parse(productionField.getText()),
                         LocalDate.parse(expiryField.getText())
                 );
@@ -130,7 +133,7 @@ public class ProductFrame extends JFrame {
                 JOptionPane.showMessageDialog(this, msg);
                 loadTable(productService.getAllProducts());
 
-            } catch(Exception ex) {
+            } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Check input and date format YYYY-MM-DD");
             }
         });
@@ -142,7 +145,7 @@ public class ProductFrame extends JFrame {
                         nameField.getText(),
                         Integer.parseInt(quantityField.getText()),
                         Double.parseDouble(priceField.getText()),
-                        (String) categoryBox.getSelectedItem(), // ✅
+                        (String) categoryBox.getSelectedItem(),
                         LocalDate.parse(productionField.getText()),
                         LocalDate.parse(expiryField.getText())
                 );
@@ -151,7 +154,7 @@ public class ProductFrame extends JFrame {
                 JOptionPane.showMessageDialog(this, msg);
                 loadTable(productService.getAllProducts());
 
-            } catch(Exception ex) {
+            } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Check input and date format YYYY-MM-DD");
             }
         });
@@ -161,7 +164,7 @@ public class ProductFrame extends JFrame {
                 String msg = productService.deleteProduct(Integer.parseInt(idField.getText()));
                 JOptionPane.showMessageDialog(this, msg);
                 loadTable(productService.getAllProducts());
-            } catch(Exception ex) {
+            } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Invalid ID");
             }
         });
@@ -171,20 +174,16 @@ public class ProductFrame extends JFrame {
             new AdminDashboard();
         });
 
-        searchNameBtn.addActionListener(e -> {
-            loadTable(productService.searchByName(nameField.getText()));
-        });
+        searchNameBtn.addActionListener(e -> loadTable(productService.searchByName(nameField.getText())));
 
-        // ✅ البحث بالكاتيجوري من ComboBox
-        searchCatBtn.addActionListener(e -> {
-            loadTable(productService.searchByCategory((String) categoryBox.getSelectedItem()));
-        });
+        searchCatBtn.addActionListener(e ->
+                loadTable(productService.searchByCategory((String) categoryBox.getSelectedItem())));
 
         searchExpiryBtn.addActionListener(e -> {
             try {
                 LocalDate d = LocalDate.parse(expiryField.getText());
                 loadTable(productService.searchByExpiryDate(d));
-            } catch(Exception ex) {
+            } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Wrong date format YYYY-MM-DD");
             }
         });
@@ -193,31 +192,47 @@ public class ProductFrame extends JFrame {
             try {
                 LocalDate d = LocalDate.parse(productionField.getText());
                 loadTable(productService.searchByProductionDate(d));
-            } catch(Exception ex) {
+            } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Wrong date format YYYY-MM-DD");
             }
         });
 
         alertBtn.addActionListener(e -> {
-
             List<Product> low = productService.checkLowStock();
-            List<Product> exp = productService.checkExpiry();
+            List<Product> expired = productService.getExpiredProducts();
+            List<Product> expiringSoon = productService.checkExpiry();
 
-            String msg = "";
+            StringBuilder msg = new StringBuilder();
 
-            for(Product p : low) {
-                msg += "Low Stock: " + p.getName() + " (Qty=" + p.getQuantity() + ")\n";
+            for (Product p : low) {
+                msg.append("Low Stock: ")
+                        .append(p.getName())
+                        .append(" (Qty=")
+                        .append(p.getQuantity())
+                        .append(")\n");
             }
 
-            for(Product p : exp) {
-                msg += "Expiring Soon: " + p.getName() + "\n";
+            for (Product p : expired) {
+                msg.append("Expired: ")
+                        .append(p.getName())
+                        .append(" (Expiry=")
+                        .append(p.getExpiryDate())
+                        .append(")\n");
             }
 
-            if(msg.isEmpty()) {
-                msg = "No Alerts";
+            for (Product p : expiringSoon) {
+                msg.append("Expiring Soon: ")
+                        .append(p.getName())
+                        .append(" (Expiry=")
+                        .append(p.getExpiryDate())
+                        .append(")\n");
             }
 
-            JOptionPane.showMessageDialog(this, msg);
+            if (msg.length() == 0) {
+                msg.append("No Alerts");
+            }
+
+            JOptionPane.showMessageDialog(this, msg.toString());
         });
 
         refreshBtn.addActionListener(e -> loadTable(productService.getAllProducts()));
@@ -226,13 +241,13 @@ public class ProductFrame extends JFrame {
             public void mouseClicked(MouseEvent e) {
                 int row = table.getSelectedRow();
 
-                idField.setText(model.getValueAt(row,0).toString());
-                nameField.setText(model.getValueAt(row,1).toString());
-                quantityField.setText(model.getValueAt(row,2).toString());
-                priceField.setText(model.getValueAt(row,3).toString());
-                categoryBox.setSelectedItem(model.getValueAt(row,4).toString()); // ✅
-                productionField.setText(model.getValueAt(row,5).toString());
-                expiryField.setText(model.getValueAt(row,6).toString());
+                idField.setText(model.getValueAt(row, 0).toString());
+                nameField.setText(model.getValueAt(row, 1).toString());
+                quantityField.setText(model.getValueAt(row, 2).toString());
+                priceField.setText(model.getValueAt(row, 3).toString());
+                categoryBox.setSelectedItem(model.getValueAt(row, 4).toString());
+                productionField.setText(model.getValueAt(row, 5).toString());
+                expiryField.setText(model.getValueAt(row, 6).toString());
             }
         });
 
@@ -256,7 +271,7 @@ public class ProductFrame extends JFrame {
     private void loadTable(List<Product> list) {
         model.setRowCount(0);
 
-        for(Product p : list) {
+        for (Product p : list) {
             model.addRow(new Object[]{
                     p.getId(),
                     p.getName(),
