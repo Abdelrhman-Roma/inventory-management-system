@@ -23,12 +23,16 @@ public class SupplierFrame extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         // Form inputs
-        JPanel formPanel = new JPanel(new GridLayout(4, 2, 10, 10));
+        JPanel formPanel = new JPanel(new GridLayout(5, 2, 10, 10));
         formPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 10, 15));
 
         formPanel.add(new JLabel("Supplier ID:"));
-        idField = new JTextField();
-        formPanel.add(idField);
+        JPanel idPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        idField = new JTextField(15);
+        JButton autoIdBtn = new JButton("Auto-Generate");
+        idPanel.add(idField);
+        idPanel.add(autoIdBtn);
+        formPanel.add(idPanel);
 
         formPanel.add(new JLabel("Supplier Name:"));
         nameField = new JTextField();
@@ -70,6 +74,11 @@ public class SupplierFrame extends JFrame {
         loadTable();
 
         //Actions
+        autoIdBtn.addActionListener(e -> {
+            int nextId = dao.getNextId();
+            idField.setText(String.valueOf(nextId));
+        });
+
         addBtn.addActionListener(e -> addSupplier());
         updateBtn.addActionListener(e -> updateSupplier());
         deleteBtn.addActionListener(e -> deleteSupplier());
@@ -112,11 +121,31 @@ public class SupplierFrame extends JFrame {
 
     private void addSupplier() {
         try {
+            String idText = idField.getText().trim();
+            String nameText = nameField.getText().trim();
+            String phoneText = phoneField.getText().trim();
+            String addressText = addressField.getText().trim();
+
+            if (idText.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Please enter an ID or click 'Auto-Generate'!");
+                return;
+            }
+
+            if (nameText.isEmpty() || !nameText.matches("[A-Za-z ]+")) {
+                JOptionPane.showMessageDialog(this, "Supplier name must contain only letters and spaces.");
+                return;
+            }
+
+            if (phoneText.isEmpty() || !phoneText.matches("\\d+")) {
+                JOptionPane.showMessageDialog(this, "Phone number must contain only digits.");
+                return;
+            }
+
             Supplier s = new Supplier(
-                    Integer.parseInt(idField.getText()),
-                    nameField.getText(),
-                    phoneField.getText(),
-                    addressField.getText());
+                    Integer.parseInt(idText),
+                    nameText,
+                    phoneText,
+                    addressText);
 
             if (dao.addSupplier(s)) {
                 loadTable();
@@ -126,6 +155,8 @@ public class SupplierFrame extends JFrame {
                 JOptionPane.showMessageDialog(this, "Supplier ID already exists! Please use a unique ID.");
             }
 
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "ID must be a numeric value.");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Invalid Input!");
         }
@@ -133,11 +164,26 @@ public class SupplierFrame extends JFrame {
 
     private void updateSupplier() {
         try {
+            String idText = idField.getText().trim();
+            String nameText = nameField.getText().trim();
+            String phoneText = phoneField.getText().trim();
+            String addressText = addressField.getText().trim();
+
+            if (nameText.isEmpty() || !nameText.matches("[A-Za-z ]+")) {
+                JOptionPane.showMessageDialog(this, "Supplier name must contain only letters and spaces.");
+                return;
+            }
+
+            if (phoneText.isEmpty() || !phoneText.matches("\\d+")) {
+                JOptionPane.showMessageDialog(this, "Phone number must contain only digits.");
+                return;
+            }
+
             Supplier s = new Supplier(
-                    Integer.parseInt(idField.getText()),
-                    nameField.getText(),
-                    phoneField.getText(),
-                    addressField.getText());
+                    Integer.parseInt(idText),
+                    nameText,
+                    phoneText,
+                    addressText);
 
             dao.updateSupplier(s);
             loadTable();
@@ -145,6 +191,8 @@ public class SupplierFrame extends JFrame {
 
             JOptionPane.showMessageDialog(this, "Updated Successfully");
 
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "ID must be a numeric value.");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error updating!");
         }

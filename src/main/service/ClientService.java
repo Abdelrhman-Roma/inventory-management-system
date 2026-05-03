@@ -26,7 +26,13 @@ public class ClientService {
         this.orders = orderDAO.getAllOrders();
 
         if (!orders.isEmpty()) {
-            this.nextOrderId = orders.get(orders.size() - 1).getOrderId() + 1;
+            int maxOrderId = 0;
+            for (order o : orders) {
+                if (o.getOrderId() > maxOrderId) {
+                    maxOrderId = o.getOrderId();
+                }
+            }
+            this.nextOrderId = maxOrderId + 1;
         }
     }
 

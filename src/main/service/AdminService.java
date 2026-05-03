@@ -101,13 +101,73 @@ public class AdminService {
 // Profit Report -> Ghayaty //
     public String generateProfitReport() {
         List<order> orders = orderDao.getAllOrders();
-        double total = 0;
-
+        
+        // Use Set for unique order IDs
+        java.util.Set<Integer> uniqueOrderIds = new java.util.HashSet<>();
+        
+        // Maps for product-level aggregation
+        java.util.Map<String, Double> productProfit = new java.util.HashMap<>();
+        java.util.Map<String, Integer> productQuantity = new java.util.HashMap<>();
+        java.util.Map<String, Double> productTotalPrice = new java.util.HashMap<>();
+        
+        double totalProfit = 0.0;
+        int totalUnits = 0;
+        
         for (order o : orders) {
-            total += o.getTotalPrice();
+            uniqueOrderIds.add(o.getOrderId());  // Add to unique set
+            
+            String productName = o.getProduct().getName();
+            double orderProfit = o.getTotalPrice();
+            int qty = o.getQuantity();
+            
+            // Aggregate per product
+            productProfit.put(productName, productProfit.getOrDefault(productName, 0.0) + orderProfit);
+            productQuantity.put(productName, productQuantity.getOrDefault(productName, 0) + qty);
+            productTotalPrice.put(productName, productTotalPrice.getOrDefault(productName, 0.0) + orderProfit);
+            
+            totalProfit += orderProfit;
+            totalUnits += qty;
         }
-
-        return "Total Profit: " + total + "\nOrder Count: " + orders.size();
+        
+        // Build table output with better formatting
+        StringBuilder report = new StringBuilder();
+        report.append("\n");
+        report.append("╔════════════════════════════════════════════════════════════════════════════════╗\n");
+        report.append("║                           📊 PROFIT REPORT 📊                                 ║\n");
+        report.append("╚════════════════════════════════════════════════════════════════════════════════╝\n");
+        report.append("\n");
+        
+        // Summary Statistics
+        report.append("📈 SUMMARY STATISTICS\n");
+        report.append("├─ Total Orders: ").append(uniqueOrderIds.size()).append("\n");
+        report.append("├─ Total Order Lines: ").append(orders.size()).append("\n");
+        report.append("├─ Total Units Sold: ").append(totalUnits).append("\n");
+        report.append("└─ Total Revenue: ").append(String.format("%.2f EGP", totalProfit)).append("\n");
+        report.append("\n");
+        
+        // Product Details Table
+        report.append("📦 PRODUCT SALES BREAKDOWN\n");
+        report.append("┌────────────────────────┬───────────┬────────────┬──────────────┐\n");
+        report.append(String.format("│ %-22s │ %9s │ %10s │ %12s │\n", "Product Name", "Qty Sold", "Profit", "Avg Price"));
+        report.append("├────────────────────────┼───────────┼────────────┼──────────────┤\n");
+        
+        for (String product : productProfit.keySet()) {
+            double profit = productProfit.get(product);
+            int qty = productQuantity.get(product);
+            double avgPrice = qty > 0 ? productTotalPrice.get(product) / qty : 0.0;
+            report.append(String.format("│ %-22s │ %9d │ %10.2f │ %12.2f │\n", 
+                product.substring(0, Math.min(22, product.length())), qty, profit, avgPrice));
+        }
+        
+        report.append("└────────────────────────┴───────────┴────────────┴──────────────┘\n");
+        report.append("\n");
+        
+        // Footer
+        report.append("═══════════════════════════════════════════════════════════════════════════════════\n");
+        report.append(String.format("💰 TOTAL PROFIT: %.2f EGP\n", totalProfit));
+        report.append("═══════════════════════════════════════════════════════════════════════════════════\n");
+        
+        return report.toString();
     }
 // =======================//
 

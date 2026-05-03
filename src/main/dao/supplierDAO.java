@@ -10,6 +10,9 @@ public class SupplierDAO {
 
     public void save(List<Supplier> suppliers) {
         try {
+            // Sort suppliers by ID before saving
+            suppliers.sort((s1, s2) -> Integer.compare(s1.getId(), s2.getId()));
+
             FileWriter writer = new FileWriter(FILE_NAME);
 
             for (Supplier s : suppliers) {
@@ -99,5 +102,20 @@ public class SupplierDAO {
     // GET ALL (for table)
     public List<Supplier> getAllSuppliers() {
         return load();
+    }
+
+    // GET NEXT ID
+    public int getNextId() {
+        List<Supplier> suppliers = load();
+        if (suppliers.isEmpty()) {
+            return 1;
+        }
+        int maxId = 0;
+        for (Supplier s : suppliers) {
+            if (s.getId() > maxId) {
+                maxId = s.getId();
+            }
+        }
+        return maxId + 1;
     }
 }
