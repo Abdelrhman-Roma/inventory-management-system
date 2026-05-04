@@ -6,7 +6,7 @@ import java.util.*;
 
 public class SupplierDAO {
 
-    private final String FILE_NAME = "../suppliers.csv";
+    private final String FILE_NAME = "suppliers.csv";
 
     public void save(List<Supplier> suppliers) {
         try {

@@ -12,3 +12,4 @@ OrderID,ClientID,ProductID,Quantity,TotalPrice,OrderDate
 4,ghotaa2,milk,1,80.2,2026-04-18
 5,TestUser,milk,1,80.2,2026-05-03
 7,TestUser,Himalaya salt,1,100.0,2026-05-03
+8,omar,pasta,2,60.0,2026-05-03

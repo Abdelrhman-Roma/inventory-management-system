@@ -10,7 +10,7 @@ import main.model.Product;
 
 public class ProductDAO {
 
-    private final String FILE_NAME = "../products.csv";
+    private final String FILE_NAME = "products.csv";
 
     public void save(List<Product> products) {
         try {

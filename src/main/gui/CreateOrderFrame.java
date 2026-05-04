@@ -45,7 +45,7 @@ public class CreateOrderFrame extends JFrame {
 
 
         // تحميل الكاتيجوري
-        try (java.util.Scanner sc = new java.util.Scanner(new java.io.File("../categories.csv"))) {
+        try (java.util.Scanner sc = new java.util.Scanner(new java.io.File("categories.csv"))) {
 
 
             while (sc.hasNextLine()) {
