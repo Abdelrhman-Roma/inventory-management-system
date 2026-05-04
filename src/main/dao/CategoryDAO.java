@@ -9,7 +9,7 @@ import main.model.Category;
 
 public class CategoryDAO {
 
-    private String file = "categories.csv";
+    private String file = "../categories.csv";
 
     public String addCategory(Category c) {
 

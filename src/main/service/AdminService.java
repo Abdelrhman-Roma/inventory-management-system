@@ -107,13 +107,12 @@ public class AdminService {
         int totalUnits = 0;
 
         for (order o : orders) {
-            uniqueOrderIds.add(o.getOrderId());  // Add to unique set
+            uniqueOrderIds.add(o.getOrderId());
 
             String productName = o.getProduct().getName();
             double orderProfit = o.getTotalPrice();
             int qty = o.getQuantity();
 
-            // Aggregate per product
             productProfit.put(productName, productProfit.getOrDefault(productName, 0.0) + orderProfit);
             productQuantity.put(productName, productQuantity.getOrDefault(productName, 0) + qty);
             productTotalPrice.put(productName, productTotalPrice.getOrDefault(productName, 0.0) + orderProfit);
@@ -122,44 +121,37 @@ public class AdminService {
             totalUnits += qty;
         }
 
-        // Build table output with better formatting
+        // Build simplified and dynamic report
         StringBuilder report = new StringBuilder();
-        report.append("\n");
-        report.append("╔════════════════════════════════════════════════════════════════════════════════╗\n");
-        report.append("║                           📊 PROFIT REPORT 📊                                 ║\n");
-        report.append("╚════════════════════════════════════════════════════════════════════════════════╝\n");
-        report.append("\n");
-
+        
+        // Header
+        report.append("\n========== PROFIT REPORT ==========\n\n");
+        
         // Summary Statistics
-        report.append("📈 SUMMARY STATISTICS\n");
-        report.append("├─ Total Orders: ").append(uniqueOrderIds.size()).append("\n");
-        report.append("├─ Total Order Lines: ").append(orders.size()).append("\n");
-        report.append("├─ Total Units Sold: ").append(totalUnits).append("\n");
-        report.append("└─ Total Revenue: ").append(String.format("%.2f EGP", totalProfit)).append("\n");
-        report.append("\n");
-
-        // Product Details Table
-        report.append("📦 PRODUCT SALES BREAKDOWN\n");
-        report.append("┌────────────────────────┬───────────┬────────────┬──────────────┐\n");
-        report.append(String.format("│ %-22s │ %9s │ %10s │ %12s │\n", "Product Name", "Qty Sold", "Profit", "Avg Price"));
-        report.append("├────────────────────────┼───────────┼────────────┼──────────────┤\n");
-
+        report.append("SUMMARY STATISTICS\n");
+        report.append("  Total Orders: ").append(uniqueOrderIds.size()).append("\n");
+        report.append("  Total Order Lines: ").append(orders.size()).append("\n");
+        report.append("  Total Units Sold: ").append(totalUnits).append("\n");
+        report.append("  Total Revenue: ").append(String.format("%.2f EGP", totalProfit)).append("\n\n");
+        
+        // Product Details Table with proper alignment and separators
+        report.append("PRODUCT SALES BREAKDOWN\n");
+        report.append("═══════════════════════════════════════════════════════════════════════\n");
+        report.append(String.format("| %-25s | %10s | %14s | %10s |\n", "Product Name", "Qty Sold", "Profit (EGP)", "Avg Price"));
+        report.append("───────────────────────────────────────────────────────────────────────\n");
+        
         for (String product : productProfit.keySet()) {
             double profit = productProfit.get(product);
             int qty = productQuantity.get(product);
             double avgPrice = qty > 0 ? productTotalPrice.get(product) / qty : 0.0;
-            report.append(String.format("│ %-22s │ %9d │ %10.2f │ %12.2f │\n",
-                    product.substring(0, Math.min(22, product.length())), qty, profit, avgPrice));
+            
+            String displayName = product.length() > 25 ? product.substring(0, 22) + "..." : product;
+            report.append(String.format("| %-25s | %10d | %14.2f | %10.2f |\n", displayName, qty, profit, avgPrice));
         }
-
-        report.append("└────────────────────────┴───────────┴────────────┴──────────────┘\n");
-        report.append("\n");
-
-        // Footer
-        report.append("═══════════════════════════════════════════════════════════════════════════════════\n");
-        report.append(String.format("💰 TOTAL PROFIT: %.2f EGP\n", totalProfit));
-        report.append("═══════════════════════════════════════════════════════════════════════════════════\n");
-
+        
+        report.append("═══════════════════════════════════════════════════════════════════════\n");
+        report.append(String.format("| %-25s | %10s | %14.2f | %10s |\n", "TOTAL", "", totalProfit, ""));
+        report.append("═══════════════════════════════════════════════════════════════════════\n");
         return report.toString();
     }
 // =======================//

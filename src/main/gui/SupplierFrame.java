@@ -52,7 +52,7 @@ public class SupplierFrame extends JFrame {
         JButton addBtn = new JButton("Add Supplier");
         JButton updateBtn = new JButton("Update Supplier");
         JButton deleteBtn = new JButton("Delete Supplier");
-        JButton backBtn = new JButton("Back to Dashboard");
+        JButton backBtn = new JButton("Back");
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
         buttonPanel.add(addBtn);
