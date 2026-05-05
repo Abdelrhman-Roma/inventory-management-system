@@ -8,27 +8,29 @@ public class EditClientFrame extends JFrame {
 
     public EditClientFrame() {
 
+        
         setTitle("Edit Profile");
-        setSize(400, 400); // زودنا الطول عشان الزحمة
+        setSize(400, 400);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
-        // 🔹 إنشاء الحقول
+        
         JPanel formPanel = new JPanel(new GridLayout(5, 2, 10, 10));
         formPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
+        // Input fields
         JTextField idField = new JTextField();
         JTextField nameField = new JTextField();
         JTextField emailField = new JTextField();
         JPasswordField oldPasswordField = new JPasswordField();
         JPasswordField passwordField = new JPasswordField();
 
-        // تعبئة البيانات الحالية للعميل
+        // Current data
         if (Main.clientService.getCurrentClient() != null) {
             idField.setText(String.valueOf(Main.clientService.getCurrentClient().getId()));
-            idField.setEditable(false); // ممنوع يعدل الـ ID
-            
+            idField.setEditable(false);
+
             nameField.setText(Main.clientService.getCurrentClient().getName());
             emailField.setText(Main.clientService.getCurrentClient().getEmail());
         }
@@ -41,14 +43,14 @@ public class EditClientFrame extends JFrame {
 
         formPanel.add(new JLabel("New Email:"));
         formPanel.add(emailField);
-        
+
         formPanel.add(new JLabel("Old Password:"));
         formPanel.add(oldPasswordField);
-        
+
         formPanel.add(new JLabel("New Password:"));
         formPanel.add(passwordField);
 
-        // 🔹 الأزرار
+        
         JPanel buttonPanel = new JPanel(new FlowLayout());
         JButton updateBtn = new JButton("Update Data");
         JButton backBtn = new JButton("Back");
@@ -59,34 +61,33 @@ public class EditClientFrame extends JFrame {
         add(formPanel, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
 
-        // ================= ACTION =================
         updateBtn.addActionListener(e -> {
             try {
-                // تجميع البيانات من الحقول
+                
                 int id = Integer.parseInt(idField.getText());
                 String oldPassword = new String(oldPasswordField.getPassword());
                 String newName = nameField.getText();
                 String newEmail = emailField.getText();
                 String newPassword = new String(passwordField.getPassword());
 
-                // التأكد من إدخال كلمة المرور القديمة
+                // Check password
                 if (oldPassword.isEmpty()) {
                     JOptionPane.showMessageDialog(this, "Please enter your old password!");
                     return;
                 }
 
-                // النداء الصحيح بـ 5 بارامترات (الترتيب مهم جداً)
+                // Update data
                 boolean updated = Main.clientService.updateClientSecure(
-                        id, 
-                        oldPassword, 
-                        newName, 
-                        newEmail, 
+                        id,
+                        oldPassword,
+                        newName,
+                        newEmail,
                         newPassword
                 );
 
                 if (updated) {
                     JOptionPane.showMessageDialog(this, "Profile Updated Successfully!");
-                    dispose(); 
+                    dispose();
                 } else {
                     JOptionPane.showMessageDialog(this, "Wrong Old Password! Please try again.");
                 }

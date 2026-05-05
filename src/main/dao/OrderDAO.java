@@ -9,8 +9,10 @@ import main.model.order;
 
 public class OrderDAO {
 
+    
     private final String FILE = "../orders.csv";
 
+    
     public void addOrder(order o) {
         try (FileWriter writer = new FileWriter(FILE, true)) {
             writer.write(o.getOrderId() + ","
@@ -24,8 +26,10 @@ public class OrderDAO {
         }
     }
 
+    // Get orders
     public ArrayList<order> getAllOrders() {
         ArrayList<order> list = new ArrayList<>();
+
         try (BufferedReader reader = new BufferedReader(new FileReader(FILE))) {
             String line = reader.readLine();
 
@@ -36,18 +40,22 @@ public class OrderDAO {
                 int quantity = Integer.parseInt(data[3]);
                 double pricePerUnit = totalPrice / quantity;
 
+                // Product object
                 Product p = new Product(0, data[2], quantity, pricePerUnit, "Unknown", null, null);
 
+                // Order object
                 order o = new order(
                         Integer.parseInt(data[0]),
                         data[1],
                         p,
                         quantity
                 );
+
                 list.add(o);
             }
         } catch (Exception e) {
-        }
+    }
+
         return list;
     }
 }

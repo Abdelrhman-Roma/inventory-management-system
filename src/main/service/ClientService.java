@@ -14,17 +14,28 @@ import main.model.order;
 
 public class ClientService {
 
+    // Client list
     private ArrayList<Client> clients = new ArrayList<>();
+
+    
     private ArrayList<order> orders = new ArrayList<>();
+
+    
     private OrderDAO orderDAO = new OrderDAO();
+
+    
     private Client currentClient;
+
+    
     private int nextOrderId = 1;
     private int nextClientId = 1;
 
     public ClientService() {
+        // Load data
         loadFromFile();
         this.orders = orderDAO.getAllOrders();
 
+        // Next order
         if (!orders.isEmpty()) {
             int maxOrderId = 0;
             for (order o : orders) {
@@ -36,18 +47,22 @@ public class ClientService {
         }
     }
 
+    // Register client
     public boolean registerClient(String name, String email, String password) {
+        // Check email
         for (Client c : clients) {
             if (c.getEmail().trim().equalsIgnoreCase(email.trim())) {
                 return false;
             }
         }
+
         Client newClient = new Client(nextClientId++, name, email, password);
         clients.add(newClient);
         saveClientsToFile();
         return true;
     }
 
+    
     public void createOrder(String productName, int qty) {
         if (currentClient == null) {
             return;
@@ -56,6 +71,7 @@ public class ClientService {
         Product selected = main.Main.productService.findByName(productName);
 
         if (selected != null) {
+            // Check stock
             if (qty > selected.getQuantity()) {
                 JOptionPane.showMessageDialog(null, "Not enough stock!");
                 return;
@@ -67,10 +83,12 @@ public class ClientService {
         }
     }
 
+    
     public void finalizeOrder() {
         this.nextOrderId++;
     }
 
+    
     public boolean updateClientSecure(int id, String oldPass, String name, String email, String newPass) {
         for (Client c : clients) {
             if (c.getId() == id && c.getPassword().equals(oldPass)) {
@@ -83,6 +101,7 @@ public class ClientService {
                 if (newPass != null && !newPass.trim().isEmpty()) {
                     c.setPassword(newPass);
                 }
+
                 saveClientsToFile();
                 return true;
             }
@@ -90,12 +109,15 @@ public class ClientService {
         return false;
     }
 
+    // Invoice text
     public String getInvoiceText() {
         if (currentClient == null || orders.isEmpty()) {
             return "No orders found!";
         }
 
         int lastId = -1;
+
+        // Last order
         for (int i = orders.size() - 1; i >= 0; i--) {
             if (orders.get(i).getUsername().equals(currentClient.getName())) {
                 lastId = orders.get(i).getOrderId();
@@ -113,6 +135,8 @@ public class ClientService {
         sb.append("--------------------------------\n");
 
         double grandTotal = 0;
+
+        // Order items
         for (order o : orders) {
             if (o.getOrderId() == lastId) {
                 sb.append("- ").append(o.getProduct().getName())
@@ -129,17 +153,21 @@ public class ClientService {
         return sb.toString();
     }
 
+    // Order report
     public String getOrderReportString() {
         if (currentClient == null) {
             return "Please Login First!";
         }
+
         StringBuilder sb = new StringBuilder();
         sb.append("================================================================================\n");
         sb.append("                      ORDER REPORT FOR: ").append(currentClient.getName().toUpperCase()).append("\n");
         sb.append("================================================================================\n");
         sb.append(String.format("%-8s %-15s %-6s %-12s %-12s\n", "OrdID", "Product", "Qty", "Total", "Date"));
         sb.append("--------------------------------------------------------------------------------\n");
+
         boolean hasOrders = false;
+
         for (order o : orders) {
             if (o.getUsername().equals(currentClient.getName())) {
                 sb.append(String.format("%-8s %-15s %-6s %-12s %-12s\n",
@@ -148,9 +176,11 @@ public class ClientService {
                 hasOrders = true;
             }
         }
+
         return hasOrders ? sb.toString() : "No orders found.";
     }
 
+    // Login check
     public boolean loginCheck(String username, String password) {
         for (Client c : clients) {
             if (c.getName().equals(username) && c.getPassword().equals(password)) {
@@ -161,22 +191,27 @@ public class ClientService {
         return false;
     }
 
+    // Load clients
     public void loadFromFile() {
         clients.clear();
+
         try {
+            File file = new File("../Clients.csv");
 
-
-            File file = new File("Clients.csv");
             if (!file.exists()) {
                 return;
             }
+
             try (BufferedReader br = new BufferedReader(new FileReader(file))) {
                 String line;
+
                 while ((line = br.readLine()) != null) {
                     String[] data = line.split(",");
+
                     if (data.length >= 4) {
                         int id = Integer.parseInt(data[0]);
                         clients.add(new Client(id, data[1], data[2], data[3]));
+
                         if (id >= nextClientId) {
                             nextClientId = id + 1;
                         }
@@ -187,11 +222,14 @@ public class ClientService {
         }
     }
 
+    // Save clients
     private void saveClientsToFile() {
-
-        try (PrintWriter pw = new PrintWriter(new FileWriter("Clients.csv", false))) {
-            for (Client c : clients) pw.println(c.getId() + "," + c.getName() + "," + c.getEmail() + "," + c.getPassword());
-        } catch (Exception e) { }
+        try (PrintWriter pw = new PrintWriter(new FileWriter("../Clients.csv", false))) {
+            for (Client c : clients) {
+                pw.println(c.getId() + "," + c.getName() + "," + c.getEmail() + "," + c.getPassword());
+            }
+        } catch (Exception e) {
+        }
 
         try (PrintWriter pw = new PrintWriter(new FileWriter("Clients.csv", false))) {
             for (Client c : clients) {
@@ -201,14 +239,17 @@ public class ClientService {
         }
     }
 
+    
     public Client getCurrentClient() {
         return currentClient;
     }
 
+    
     public void logout() {
         this.currentClient = null;
     }
 
+    
     public void sendEmailNotification() {
         if (currentClient != null) {
             JOptionPane.showMessageDialog(null, "Order Confirmation Email sent to: " + currentClient.getEmail());

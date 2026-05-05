@@ -1,4 +1,5 @@
 package main.gui;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -19,35 +20,38 @@ import javax.swing.JTextField;
 import main.Main;
 import main.model.Product;
 import main.model.order;
+
 public class CreateOrderFrame extends JFrame {
 
+    
     private java.util.List<order> cart = new ArrayList<>();
 
     public CreateOrderFrame() {
+        // Frame setup
         setTitle("Create Order - Client Side");
         setSize(500, 600);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
+        // Input fields
         JComboBox<String> categoryCombo = new JComboBox<>();
         JComboBox<String> productCombo = new JComboBox<>();
         JTextField quantityField = new JTextField();
 
+        
         JTextArea cartArea = new JTextArea(10, 30);
         cartArea.setEditable(false);
         cartArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
         cartArea.setBorder(BorderFactory.createTitledBorder("Current Cart"));
 
+        
         JLabel totalLabel = new JLabel("Total: 0 EGP");
         totalLabel.setFont(new Font("Arial", Font.BOLD, 15));
         totalLabel.setForeground(new Color(0, 102, 0));
 
-
-        // تحميل الكاتيجوري
-        try (java.util.Scanner sc = new java.util.Scanner(new java.io.File("categories.csv"))) {
-
-
+        try (java.util.Scanner sc = new java.util.Scanner(new java.io.File("../categories.csv"))) {
+            // Load categories
             while (sc.hasNextLine()) {
                 String line = sc.nextLine();
                 if (line.isEmpty()) {
@@ -63,8 +67,10 @@ public class CreateOrderFrame extends JFrame {
         }
 
         categoryCombo.addActionListener(e -> {
+            // Filter products
             String selectedCategory = (String) categoryCombo.getSelectedItem();
             productCombo.removeAllItems();
+
             for (Product p : Main.productService.getAllProducts()) {
                 if (p.getCategory().equalsIgnoreCase(selectedCategory)) {
                     productCombo.addItem(p.getName());
@@ -72,6 +78,7 @@ public class CreateOrderFrame extends JFrame {
             }
         });
 
+        
         JPanel formPanel = new JPanel(new GridLayout(4, 2, 10, 10));
         formPanel.setBorder(BorderFactory.createEmptyBorder(15, 20, 10, 20));
         formPanel.add(new JLabel("Category:"));
@@ -81,14 +88,17 @@ public class CreateOrderFrame extends JFrame {
         formPanel.add(new JLabel("Quantity:"));
         formPanel.add(quantityField);
 
+        
         JPanel centerPanel = new JPanel(new BorderLayout());
         centerPanel.add(formPanel, BorderLayout.NORTH);
         centerPanel.add(new JScrollPane(cartArea), BorderLayout.CENTER);
 
+        
         JPanel summaryPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         summaryPanel.add(totalLabel);
         centerPanel.add(summaryPanel, BorderLayout.SOUTH);
 
+        
         JPanel buttonPanel = new JPanel(new FlowLayout());
         JButton addBtn = new JButton("Add to Cart");
         JButton createBtn = new JButton("Confirm & Buy");
@@ -103,11 +113,13 @@ public class CreateOrderFrame extends JFrame {
 
         addBtn.addActionListener(e -> {
             try {
+                // Selected product
                 String productName = (String) productCombo.getSelectedItem();
                 if (productName == null) {
                     return;
                 }
 
+                // Read quantity
                 int qty = Integer.parseInt(quantityField.getText().trim());
                 if (qty <= 0) {
                     throw new NumberFormatException();
@@ -118,6 +130,7 @@ public class CreateOrderFrame extends JFrame {
                     return;
                 }
 
+                // Cart quantity
                 int alreadyInCart = 0;
                 for (order o : cart) {
                     if (o.getProduct().getName().equalsIgnoreCase(productName)) {
@@ -125,6 +138,7 @@ public class CreateOrderFrame extends JFrame {
                     }
                 }
 
+                // Check stock
                 int available = p.getQuantity() - alreadyInCart;
                 if (qty > available) {
                     JOptionPane.showMessageDialog(this,
@@ -132,16 +146,20 @@ public class CreateOrderFrame extends JFrame {
                     return;
                 }
 
+                // Add cart
                 String currentUserName = Main.clientService.getCurrentClient().getName();
                 order newTempOrder = new order(0, currentUserName, p, qty);
                 cart.add(newTempOrder);
 
-                cartArea.append(String.format("- %-15s x%-3d (%s EGP)%n", p.getName(), qty, (p.getPrice() * qty)));
+                cartArea.append(String.format("- %-15s x%-3d (%s EGP)%n",
+                        p.getName(), qty, (p.getPrice() * qty)));
 
+                // Update total
                 double total = 0;
                 for (order o : cart) {
                     total += o.getTotalPrice();
                 }
+
                 totalLabel.setText("Total: " + total + " EGP");
                 quantityField.setText("");
 
@@ -151,65 +169,66 @@ public class CreateOrderFrame extends JFrame {
         });
 
         createBtn.addActionListener(e -> {
+            // Check cart
             if (cart.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Your cart is empty!");
                 return;
             }
 
             ArrayList<order> updatedCart = new ArrayList<>();
-boolean anySuccess = false;
+            boolean anySuccess = false;
 
-for (order o : cart) {
-    Product realProduct = Main.productService.findByName(o.getProduct().getName());
+            for (order o : cart) {
+                Product realProduct = Main.productService.findByName(o.getProduct().getName());
 
-    if (realProduct != null) {
+                if (realProduct != null) {
+                    LocalDate today = LocalDate.now();
+                    LocalDate expiry = realProduct.getExpiryDate();
 
-        LocalDate today = LocalDate.now();
-        LocalDate expiry = realProduct.getExpiryDate();
+                    // Check expiry
+                    if (expiry.isBefore(today)) {
+                        JOptionPane.showMessageDialog(this,
+                                " Removed expired product: " + realProduct.getName());
+                        continue;
+                    }
 
-        // ❌ لو expired → متضيفوش للكارت
-        if (expiry.isBefore(today)) {
-            JOptionPane.showMessageDialog(this,
-                "❌ Removed expired product: " + realProduct.getName());
-            continue;
-        }
+                    // Check quantity
+                    if (realProduct.getQuantity() >= o.getQuantity()) {
+                        Main.productService.reduceQuantity(o.getProduct().getName(), o.getQuantity());
+                        Main.clientService.createOrder(o.getProduct().getName(), o.getQuantity());
+                        anySuccess = true;
+                    } else {
+                        updatedCart.add(o);
+                    }
 
-        // ✅ check quantity
-        if (realProduct.getQuantity() >= o.getQuantity()) {
-            Main.productService.reduceQuantity(o.getProduct().getName(), o.getQuantity());
-            Main.clientService.createOrder(o.getProduct().getName(), o.getQuantity());
-            anySuccess = true;
-        } else {
-            updatedCart.add(o); // رجعه للكارت لو مفيش كمية
-        }
-
-    } else {
-        updatedCart.add(o);
-    }
-}
+                } else {
+                    updatedCart.add(o);
+                }
+            }
 
             if (anySuccess) {
+                
                 Main.clientService.finalizeOrder();
                 JOptionPane.showMessageDialog(this, "Available items purchased successfully!");
             }
+
+            // Refresh cart
             cart.clear();
-        cart.addAll(updatedCart);
+            cart.addAll(updatedCart);
 
-        cartArea.setText("");
-        double total = 0;
+            cartArea.setText("");
+            double total = 0;
 
-        for (order o : cart) {
-            cartArea.append("- " + o.getProduct().getName() + " x" + o.getQuantity() + "\n");
-            total += o.getTotalPrice();
-        }
+            for (order o : cart) {
+                cartArea.append("- " + o.getProduct().getName() + " x" + o.getQuantity() + "\n");
+                total += o.getTotalPrice();
+            }
 
-            totalLabel.setText("Total: " + total + " EGP");            
-
+            totalLabel.setText("Total: " + total + " EGP");
         });
 
         backBtn.addActionListener(e -> this.dispose());
 
         setVisible(true);
     }
- }
-
+}

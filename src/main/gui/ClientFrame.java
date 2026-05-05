@@ -12,15 +12,18 @@ import main.Main;
 public class ClientFrame extends JFrame {
 
     public ClientFrame() {
+        
         setTitle("Register New Account");
         setSize(400, 400);
         setLocationRelativeTo(null);
         setLayout(new GridLayout(5, 2, 10, 10));
 
+        
         JTextField nameField = new JTextField();
         JTextField emailField = new JTextField();
         JPasswordField passwordField = new JPasswordField();
 
+        
         add(new JLabel("Name:"));
         add(nameField);
         add(new JLabel("Email:"));
@@ -28,6 +31,7 @@ public class ClientFrame extends JFrame {
         add(new JLabel("Password:"));
         add(passwordField);
 
+        
         JButton registerBtn = new JButton("Register");
         JButton backBtn = new JButton("Back");
 
@@ -35,15 +39,18 @@ public class ClientFrame extends JFrame {
         add(backBtn);
 
         registerBtn.addActionListener(e -> {
+            
             String name = nameField.getText();
             String email = emailField.getText();
             String password = new String(passwordField.getPassword());
 
+            // Check empty
             if (name.isEmpty() || email.isEmpty() || password.isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Please fill all fields!");
                 return;
             }
 
+            
             boolean success = Main.clientService.registerClient(name, email, password);
 
             if (success) {
@@ -56,6 +63,7 @@ public class ClientFrame extends JFrame {
         });
 
         backBtn.addActionListener(e -> {
+            // Back screen
             dispose();
             new ClientDashboard();
         });

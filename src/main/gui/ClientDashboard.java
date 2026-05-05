@@ -2,8 +2,8 @@ package main.gui;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import javax.swing.Box;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -13,15 +13,18 @@ import main.Main;
 public class ClientDashboard extends JFrame {
 
     public ClientDashboard() {
+        // Frame setup
         setTitle("Client Dashboard");
         setSize(400, 500);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
 
+        // Main panel
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         panel.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50));
 
+        // Buttons
         JButton loginBtn = createStyledButton("Login to My Account");
         JButton registerBtn = createStyledButton("Register New Account");
         JButton editBtn = createStyledButton("Edit Profile");
@@ -30,18 +33,22 @@ public class ClientDashboard extends JFrame {
         JButton logoutBtn = createStyledButton("Logout");
         JButton backBtn = createStyledButton("Back");
 
+        // Login state
         boolean isLoggedIn = (Main.clientService.getCurrentClient() != null);
 
         if (!isLoggedIn) {
+            // Before login
             addButton(panel, loginBtn);
             addButton(panel, registerBtn);
         } else {
+            // After login
             addButton(panel, editBtn);
             addButton(panel, myServicesBtn);
             addButton(panel, orderBtn);
             addButton(panel, logoutBtn);
         }
 
+        
         addButton(panel, backBtn);
 
         loginBtn.addActionListener(e -> {
@@ -58,6 +65,7 @@ public class ClientDashboard extends JFrame {
         orderBtn.addActionListener(e -> new CreateOrderFrame());
 
         logoutBtn.addActionListener(e -> {
+            
             Main.clientService.logout();
             new ClientDashboard();
             dispose();
@@ -72,6 +80,7 @@ public class ClientDashboard extends JFrame {
         setVisible(true);
     }
 
+    
     private JButton createStyledButton(String text) {
         JButton btn = new JButton(text);
         btn.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -79,6 +88,7 @@ public class ClientDashboard extends JFrame {
         return btn;
     }
 
+    
     private void addButton(JPanel panel, JButton btn) {
         panel.add(btn);
         panel.add(Box.createVerticalStrut(10));
